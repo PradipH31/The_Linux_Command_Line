@@ -1,0 +1,109 @@
+echo
+    Prints the text argument to stdout
+    Example:
+        echo a quick brown fox
+        a quick brown fox
+    echo works like ls with absolute filepaths
+Expansion
+    ehco *
+        lists the files and folders in the current directory
+        The shell expands the * into filenames in the working directory
+    If we just type *, the shell will attempt to execute a command by the name of the first file or directory name
+    echo D*
+    echo *s
+    echo [[:upper:]]*
+        Shows the files/directories starting with uppercase letters
+    echo /usr/*/share
+
+Expansion of hidden files
+    echo .* almost works
+    echo .[!.]* also works
+    ls -A works the best
+
+Tilde Expansion
+    echo ~foo
+        Home folder of foo
+    echo ~
+        Home folder of current user
+
+Arithmetic Expansion
+    echo $((1 + 2))
+    Works like  $((expression))
+    Exponentiation is **
+    $(($((5**2)) * 3))
+    75
+
+Brace Expansion
+    echo Front-{A,B,C}-Back
+    The brace expression can contain either a comma separated list of strings
+                                         or a range of integers or single characters
+    echo Number-{1..5}
+    In newer bash, {001..005} also works
+    echo {Z..A}
+    Nesting brace expressions
+        echo a{A{1,2},B{1,2}}b
+        aA1b aA2b aB1b aB2b
+The most common use is to create multiple files or folders
+    mkdir {2001..2008}-{01..12}
+
+Parameter Expansion
+    Small variables are available for examination like USER(conatains username)
+    echo $USER
+    printenv
+        List all environment variables 
+
+Command Substitution
+    echo $(ls)
+    ls -l $(which cp)
+        We pass the result of which cp as argument to ls -l
+    file $(ls -d /usr/bin/* | grep zip)
+        This works because using ls on absolute path of a file gives the absolute filepath
+        Using ls on a directory would give only the filename not the absolute filepath
+Another way to do command substitution is to use `` instead of $()
+
+
+Quoting
+    To prevent unnecessary expansion
+    Example:echo This    is
+            echo Total is $100.00
+Double Quotes
+    It suppresses special characters except `, $, \
+    So, command substitution, parameter expansion and arithmetic expansion can still occur
+    Examples
+        ls -l "two words.txt"
+    echo "$USER $((2+2)) $(cal)"
+In the shell(BASH), word splitting searches for tabs, spaces and newlines and treats them as delimiters
+    echo this is a     test
+    this is a test
+Here, BASH splits the word and considers the multiple spaces as a single delimiter, the echo command has 3 arguments
+Using double quotes, the echo command will have a single argument
+    echo "this is a    test"
+    this is a    test
+As newlines are also considered delimiters, some commands have unexpected results
+    echo $(cal)
+    echo "$(cal)"
+    In the first instance, the echo command will have 38 arguments
+    In the second instance, the echo command will have 1 argument
+
+Single Quotes
+    suppress all expansion
+
+Escaping Characters
+    Quote only a single character with backslash(\)
+    can be used to include special characters in filenames
+    Use \\ to use a backslash
+    Backslash doesnot work in single quotes
+
+Backslash Escape Sequences
+    Backslash can represent certain special characters called control codes
+    Some common escape sequences
+        \a  Bell (causes computer to beep)
+        \b  Backspace
+        \n  Newline
+        \r  Carriage return
+        \t  Tab
+    Using -e on echo will enable interpretation of escape sequences
+    Putting escape sequences in $' ' will also do the same
+    Examples
+        sleep 10; echo -e "Time's up\a"
+        sleep 10; echo "Time's up" $'\a'

@@ -1,0 +1,92 @@
+Programs produce output often of 2 types:
+    The program's result
+    The status and error message
+
+    Programs such as ls send results to special file called standard output(stdout) and status messages to standard error(stderr)
+    By default, stdout and stderr are linked to the screen and not saved in a file
+    Many programs take input from a facility called stdin which is attached to the keyboard
+    I/O redirection allows us to change where the output goes to and where the input comes from
+
+File descriptors:
+    0       Standard Input
+    1       Standard Output
+    2       Standard Error
+
+Redirecting stdout:
+    With > operator
+    command > file
+    When we redirect using >, the destination file will be rewritten
+    We can empty a file using the stdout redirection by redirecting nothing
+    To append to a file, we use >> operator
+    If we redirect the output of a directory that does not exist, we receive an error on the screen(as only the stdout has been redirected to the file)
+
+Redirecting stderr:
+    Stderr is redirected using the file descriptor
+    command 2> file
+
+Redirecting stdout and stderr to a file
+    command > file 2>&1
+        command 2>&1 > file
+        will print the stderr to the screen and stdout to the file
+
+Redirecting with the new method from BASH
+    command &> file
+        OR
+    command &>> file
+
+To suppress error messages from a command,
+    command 2> /dev/null
+
+Commands
+    cat file1 file2
+        Concatenate output of multiple files
+    If a file has been broken down as movie.mpeg.001, movie.mpeg.002,...
+    We can join them with cat movie.mpeg.0* > movie.mpeg
+
+When we cat nothing, it reads from the stdin
+So, we can make files like
+    cat > test.txt
+
+Redirecting stdin:
+    command < file
+    Example:
+        cat < test.txt
+
+Using pipelines
+Using pipeline, we can pipe the stdout of a command to the stdin of another command
+    command1 | command2
+    For example:ls /usr/bin | less
+
+Filters
+    modify the input and can be used with pipelines
+        sort
+            sorts the input by alphabet in default
+            Example:
+                ls /bin /usr/bin | sort | less
+        uniq
+            accepts a sorted list and removes any duplicate by default
+            Example:
+                ls /bin /usr/bin | sort | uniq | less
+                ls /bin /usr/bin | sort | uniq -d | less
+        wc
+            display number of lines, words, and bytes in the provided input
+            Examples:
+                wc /etc/passwd
+                42   70 2409 /etc/passwd
+                ls /bin /usr/bin | sort | uniq | wc -l
+                2284
+        grep
+            prints line matching the pattern
+            grep pattern filename/input
+            Example:
+                ls /bin /usr/bin | sort | uniq | grep zip
+            -i to ignore case and -v to view non-matched results
+        head/tail
+            Display the first/last 10 lines by default or specified lines
+            Example:
+                head -n 5 /etc/passwd
+            -f in tail to view live changes to the file
+        tee
+            Read from stdin and send output to stdout and files
+            Example:
+                ls /usr/bin | tee ls.txt | grep zip

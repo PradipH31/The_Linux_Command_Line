@@ -1,0 +1,46 @@
+Shortcuts in terminal
+    Ctrl A      Move cursor to beginning
+    Ctrl E      Move cursor to end
+    Ctrl F      Move cursor forward 1 character
+    Ctrl B      Move cursor backward 1 character
+    Alt F
+    Alt B
+    Ctrl D      Delete character at cursor
+    Ctrl T      Exchange character at cursor to the one preceding it
+    Alt T       Exchange word at cursor to the one preceding it
+    Alt L       Convert characters from cursor to end of word to lowercase
+    Alt U       Convert characters from cursor to end of word to uppercase
+    Ctrl K      Kill text from cursor location to end
+    Ctrl U      Kill text from cursor location to beginning
+    Alt D       Kill text from cursor location to end of word
+    Alt Backsp  Kill text from cursor to beginning of word or the previous word
+    Ctrl Y      Yank text to cursor location
+
+Tab completion works with variables($), usernames(~), commands, pathnames, and hostnames(@, listed in /etc/hosts)
+    Alt ?       Display possible tab completions
+    Alt *       Insert all possible completions
+
+Using history
+history | less
+!command_no from history
+Ctrl R to incremental search in history
+    Ctrl J to copy from history to command line
+    Ctrl R to find next occurence
+
+History Shortcuts
+    Ctrl P      Previous history entry
+    Ctrl N      Next history entry
+    Alt <       Top of history list
+    Alt >       Bottom of history list
+    Ctrl R      Reverse incremental search
+    Alt P       Reverse nonincremental search
+    Alt N       Forward nonincremental search
+    Ctrl O      Execute the current entry of history and move to next
+
+History Expansion
+    !!          Repeat last command
+    !number     Repeat number from history list
+    !string     Repeat last history entry starting with string
+    !?string    Repeat last history entry containing string
+
+script command can record shell commands

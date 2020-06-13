@@ -1,0 +1,133 @@
+The shell refers to the terminal
+bash is a shell program from GNU Project
+We use terminal emulator to interact with the shell
+A shell prompt typically includes username@machinename followed by the current working directory and a $
+If the last character of the prompt is #, the terminal has superuser privileges
+The up arrow key shows the command history
+
+Some commands
+date shows date
+cal  shows calendar
+df   shows free space on the disk
+du   shows memory usage
+exit exit the terminal session (also with CTRL-D)
+pwd     print working directory
+ls      list contents of directory
+cd      change the working directory
+
+ls accepts multiple arguments for multiple locations
+
+Commands are followed by options and that modify their behavior and further by one or more arguments, the items upon which the command acts
+
+ls -lt
+    Sort the listed files according to the modification time
+    --reverse
+
+file
+    Determine the type of a file
+
+less
+    Views content of a file
+    b       Scroll back 1 page
+    space   Scroll forward 1 page
+    G       Move to the end of file
+    g 1G    Move to the beginning of file
+    /abc    Seach forward to the next occurence of abc
+    n       Search for next occurence of the previous search
+ 
+Symbolic links are represented by l in the first letter
+They are used for programs that have frequent version updates
+
+Copying html files that do not exist on the destination
+cp -u *.html destination
+
+Wildcards
+*               Matches any characters
+?               Matches any single character
+[characters]    Matches any character that is a member of the set characters
+[!characters]   Matches any character that is not a member of the set characters
+[[:class:]]     Matches any character that is a member of the class
+Classes
+[:alnum:]       Alphanumeric character class
+[:alpha:]       Alphabetic character class
+[:digit:]       Numbers class
+[:lower:]       Lowercase character class
+[:upper:]       Uppercase character class
+
+Useful commands:
+mkdir
+cp
+   -i       interactive
+   -u       unique
+   -a       preserves the attributes and copies recursively
+   -r       recursive copying
+mv
+    After the mv is done, the original file no longer exists
+rm
+    Removes a file or directory
+ln
+    Creates symbolic links or hard links
+
+    ln -s item file2
+        Creates symbolic link of file or directory
+        Use relative path if the symbolic link will be on the same directory tree as moving the directory will not disturb the link, else use absolute path
+        While using relative paths for symbolic links, use the relative path of the destination of the link
+        Symbolic links create a file that contains a text pointer to the referenced file or directory
+        If the file pointed by symbolic link is deleted, the link is said to be broken
+        Symbolic links span partitions and can refer directory
+
+    ln file1 file2
+        Creates hard link
+        Hard links create an additional directory entry for a file
+        Inode of a hard link is the actual pointer to the file
+        So, 2 files with same inode are the hard links of the file
+        To view inodes,
+            ls -i
+        A file will be delted and its space deallocated when it has 0 hard links
+
+Types of commands
+    Executable
+        Compiled binaries or scripts
+    Commands built into shell
+        Like cd, internal built-in shell commands
+    Shell functions
+        Miniature shell scripts incorporated into the environment
+    Alias
+        Commands built from other commands
+
+Identifying the type of command
+    type command
+
+Displaying an executable's location
+    which command
+    It only works for executables
+
+Getting a Command's Documentation
+    For shell builtins:
+        help command
+    For executables:
+        command --help
+        man command
+            man man to view sections of man pages
+    Man pages based on a search term
+        apropos searchterm
+        man -k searchterm
+    1-line man page description
+        whatis command
+    Info entry
+        Info is a GNU alternative to man
+        info package
+            Example:info coreutils
+    Program Documentation Files
+        Many software packages have documentation files in /usr/share/doc
+
+Combining commands
+    command; command; command
+    Example: cd /usr; ls
+
+Alias
+    Before using alias, use type to check if the alias name is available
+    alias alias_name='string/commands'
+Removing alias
+    unalias alias_name
+Aliases defined on the command line vanish when the shell session ends

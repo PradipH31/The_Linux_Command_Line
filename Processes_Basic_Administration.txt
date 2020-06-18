@@ -1,0 +1,128 @@
+Multitasking is the illusion of doing more than 1 things at once, 
+
+ps
+    Fields are PID, TTY(teletype-controlling terminal), TIME(CPU time consumed by the process) 
+    ps x
+        Shows all processes regardless of which or any terminal they are controlled by
+        New field is the stat(state)
+            R   running or ready to run    
+            S   sleeping(not running, waiting for an event)
+            D   uninterruptible sleep(waiting for I/O such as disk space)
+            T   stopped(instructed to stop)
+            Z   zombie process(terminated child process not cleaned by parent)
+            <   high priority process 
+            N   low priority process
+        ps aux
+            Also shows all processes belonging to every user
+            New fileds:
+                USER    User ID
+                %CPU    CPU usage in percent
+                %MEM    Memory usage in percent
+                VSZ     Virtual memory size
+                RSS     Resident Set Size(physical memory in kb)
+                START   Time when the process started
+            
+top
+    View processes in real time(3 second update)
+    top display consists of 2 parts
+        System summary
+        Table of processes sorted by CPU activity
+    System summary
+        First row
+            Name of program
+            Current time of day
+            uptime
+            users logged in currently
+            load average    number of process waiting to run
+                            average for last 60 seconds
+                            average for last 5 minutes
+                            average for last 15 minutes
+                        Less than 1.0 indicates the machine is not busy
+        Second row
+            Tasks       Number of processes and their states
+        Third row
+            %CPU(s)     Character of activities the CPU is performing
+            us          CPU percent used by user processes(outside kernel)
+            sy          CPU percent used by system processes(kernel)
+            ni          CPU percent used by nice processes(low priority)
+            id          CPU percent idle
+            wa          CPU percent waiting for I/O
+        Fourth row
+            Mem         How physical memory is being used
+        Fifth row
+            Swap        How virtual memory is being used
+
+Controlling Processes
+    Ctrl-C  Interrupt the program
+            Politely asking the program to terminate
+    program &
+        Put the program in background
+        jobs
+            View the programs in background
+        fg %1
+            Return the first job(background process) to foreground
+            %1 is the jobspec
+
+Stopping/Pausing a Process
+    Ctrl-Z
+        Stop a foreground process and place it in background
+    bg %1
+        Resume program execution in background
+    fg
+        Continue program execution in foreground
+
+Signals
+    kill PID
+        kills the program
+        kill command sends signals
+    Ctrl-C and Ctrl-Z are signals
+    Ctrl-C  INT(interrupt)
+    Ctrl-Z  TSTP(terminal stop)
+    kill command is used to send signals to programs
+        kill -signal PID
+        With no specified signal, kill sends TERM(terminate)
+        signal can be number or name, including name prefixed with SIG
+Common Signals
+    Number  Name    Meaning
+    1       HUP     Hang up. Indicate a program that a controlling terminal has hung up.
+                    When a terminal is closed, the foreground programs will be sent the signal and will terminate
+                    When a daemon receives the signal, it will restart and reread its configuration file
+    2       INT     Interrupt(same as Ctrl-C)
+                    Usually terminate a program
+    9       KILL    The signal is not sent to the program
+                    Kernel immediately terminates the process
+    15      TERM    Terminate(default signal by kill command)
+                    If a program is still alive enough to receive signals, it will terminate
+    19      STOP    Cause a process to pause without termination
+                    Sent similar to kill
+    20      TSTP    Terminal stop(Ctrl-Z)
+                    It is received by the program, and the program may choose to ignore it
+    3       QUIT    Quit
+    11      SEGV    Segmentation violation
+                    Sent when program makes illegal use of memory
+    28      WINCH   Window change(programs like top, less)
+                    When windows changes, the programs will redraw
+kill -l
+    View signals
+
+killall -u user -signal name
+    Send signals to multiple processes
+
+Shutting Down the System
+    halt
+    poweroff
+    reboot
+    shutdown
+        shutdown -h(halt)/-r(reboot)/-p(poweroff) time
+
+Some Process-Related Commands
+pstree
+    Shows a process list arranged in a tree-like pattern showing parent-child relationship
+vmstat
+    Snapshot of system resource
+    vmstat 5
+        in 5 second interval
+xload
+    Graph showing system load over time in a GUI
+tload
+    Similar to xload but in terminal

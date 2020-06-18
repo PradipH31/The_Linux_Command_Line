@@ -1,0 +1,80 @@
+id
+    Information about the identity of the current user
+        UserID, GroupId, Groups
+    User accounts and their details are stored in /etc/passwd
+        username, uid, gid, real name, home_dir, login shell
+    Groups and their details are stored in /etc/group
+    User password are stored in /etc/shadow
+
+Permissions
+    Attribute
+        r
+            Files can be opened and read
+            
+            Directories content can be viewed
+        w
+            Files can be written or appended, not necessarily renamed or deleted
+
+            Files within directory can be created, renamed and deleted
+        x
+            FIles can be executed
+
+            Directories can be entered with cd
+
+File Attributes
+    The first character from the output of ls
+        -       Regular file
+        d       Directory
+        l       Symbolic link
+        c       Character special file, devices handling data as a stream of bytes, like terminal or /dev/null
+        b       Block special file, devices handling data in blocks, like DVD, hard drive
+
+chmod
+    Change permissions
+    chmod octal_permission file
+    chmod symbol file
+        symbols:u,g,o,a = r/w/x or u,g,o,a +/- r/w/x
+
+umask
+    View default permission to be removed from a new file
+    Set default permissions with umask permission
+    The mask is in 4 digits octal format
+        The last 3 digits are for the permissions of owner, group and others
+        The first digit represents special permissions like setuid(4000), setgid(2000), sticky(1000) which prevents users other than su, owner to delete or rename files in a directory
+    The execute permission is always off
+
+Changing Identities
+    su -l user
+        Change the current user to user and cd to user's home
+        Doesn't work in Ubuntu for root
+        su -c 'command'
+            Execute a single command as root
+    sudo 
+        Execute a command as another user
+        Requires the user's password, not root password
+        sudo -i
+            Load an interactive shell as root
+        sudo -l
+            View the commands current user can execute as root
+
+chown user:group file
+    Change ownership
+        user
+        user:group
+        :group      Change the group to group
+        user:       Change the user to user & group to login group of user
+
+A Practical Example
+    Creating a shared folder
+        Steps:
+            Create a group named music
+            sudo mkdir /usr/local/share/music
+            sudo chown :music /usr/local/share/music
+            sudo chmod 775 /usr/local/share/music
+            sudo chmod g+s /usr/local/share/music
+                Sets the group of the files created to be music
+            umask 0002 for both users
+                Default mask will be 0022, rendering group members unable to make changes to the files
+
+passwd
+    Changes password of current user or specified user

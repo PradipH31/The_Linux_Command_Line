@@ -1,0 +1,8 @@
+Multitasking is the illusion of doing more than 1 things at once, 
+
+ps
+    Fields are PID, TTY(teletype-controlling terminal), TIME(CPU time consumed by the process) 
+    ps x
+        Shows all processes regardless of which or any terminal they are controlled by
+            New field is the stat(state)
+                

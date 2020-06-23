@@ -1,0 +1,50 @@
+Compatibility mode in vim means it runs close to vi
+To run with enhanced behavior,
+    echo "set nocp" >> ~/.vimrc
+
+Some useful commands
+Commands
+q q! w
+
+Not Remembered
+:%s/Search/Replace/g    Search and replace all occurences in the file
+    :   Starts an ex command
+    %   Specifies the range of lines for the operation to be first line to last line
+        Alternatively, range could be 1,5 or 1,$, etc
+        If there is no range, the operation is performed on the current line only
+
+    s   Specifies the operation as substitute(search and replace)
+    /Search/Replace     Specifies the search pattern and the replace text
+    g   Global meaning the operation is performed on every instance of the search string
+        If omitted, only first instance of search string is replaced
+Adding c to the end of the search command will ask for user confirmation
+    Responses
+        y   yes for current text
+        n   skip current instance
+        a   yes for all instances
+        q   quit substituting
+        l   perform this instance and then quit
+        Ctrl-E  Scroll the text down
+        Ctrl-Y  Scroll the text up
+
+Non-Commands
+i h j k l 0 $ w b xG G gg u a A o O u Ctrl-R
+dd dw x 
+y same as d(not remembered as well)
+p
+/ n
+
+Not remembered
+^       To first non-whitespace character on current line
+B/W     Same as b/w but ignore punctuation
+Ctrl F  Move forward 1 page
+Ctrl B  Move backward 1 page
+dW      From current cursor to beginning of next word
+d$      From current cursor to end of current line
+d0      From current cursor to beginning of current line
+d^      From current cursor to first non-whitespace character
+dG      From current cursor to end of the file
+d20G    From current cursor to 20th line of the file
+dW      From current cursor to beginning of next word(ignoring characters, which is done by dw)
+J       Remove the end of line character and joins the next line
+f*      Search * in the current line

@@ -1,0 +1,28 @@
+Modifying the Environment
+User-Specific
+    Adding directories to PATH/Define additional environment variables
+        Change .bash_profile (.profile in Ubuntu)
+    Everything else
+        Change .bashrc
+System-wide
+    Change repsective in /etc/
+
+Whenever we edit an important config file, always create a backup copy of it first
+    cp .bashrc .bashrc.bak
+    Adding changes to bashrc to make life easier
+        umask 0002              Change umask to make directory sharing easier
+        export HISTCONTROL=ignoredups
+                                Cause the shell history to ignore a command that was just recorded
+        export HISTSIZE=1000    Increase command history from 500 to 1000
+        alias l.='ls -d .* --color=auto'
+                                Display all directories that begin with .
+        alias ll='ls -l --color=auto'
+                                Display long-formatted directory listing
+
+Commenting & Uncommenting
+Use # at beginning to comment, and remove # to uncomment
+
+Activating Changes
+The bashrc file will be read only when a new terminal session is started
+We can force bash to reread the modified .bashrc
+        source ~/.bashrc

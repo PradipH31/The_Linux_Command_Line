@@ -1,0 +1,77 @@
+The file /etc/fstab lists the devices(typically hard disk partitions) that will be mounted at boot time
+The 6 fields in the /etc/fstab file are
+Field Contents          Description
+1     Device            Traditionally, this contains the actual name of a device
+                        file associated with the physical device, like /dev/sda1
+                        (the first partition of the first detected hard disk) But
+                        with today's computers, which have many devices that are
+                        hot pluggable(USBs), many modern Linux distros associate
+                        a device with a text label instead. This label(added to
+                        storage media when it is formatted) can be a simple text
+                        or a randomly generated UUID(Universally Unique Identifier)
+                        The label is read by the OS when the device is attached to
+                        the system. This way, no matter which device file is
+                        assigned to the actual physical device, it can still be
+                        correctly identified
+2     Mount point       The directory where the device is attached to the file 
+                        system tree
+3     File system type  Linux allows many file system types to be mounted. Most
+                        native Linux file systems are Fourth Extended File System 
+                        (ext4), but others are also supported. like FAT16(msdos),
+                        FAT32(vfat), NTFS(ntfs), CD-ROM(iso9660),etc
+4     Options           File systems can be mounted with options like read-only or
+                        prevent any programs from being executed from them(security)
+5     Frequency         A single number that specifies if and when a file system is
+                        to be backed up with the dump command
+6     Order             A single number that specifies in what order file systems 
+                        should be checked with the fsck commmand
+
+Viewing Mounted File Systems
+mount
+    used to mount file systemns
+    Entering without arguments displays the file systems currently mounted
+The format is [device] on [mount_point] type [filesystem_type] (options)
+              /dev/sda1 on / type ext4 (rw,relatime,errors=remount-ro)
+
+Unmounting file systems or devices
+umount device_mounted_location
+
+Mounting file systems or devices
+mount mount_location /mnt/device_name
+    If mounted on a non-empty directory, the previous contents won't be accessible until the device is unmounted
+    mount -t iso9660 /dev/sdc /mnt/cdrom
+        t option is for type and iso9660 is for CD-ROM
+
+Determining Device Names
+    Getting some ideas from /dev
+            Linux Storage Device Names
+    Pattern     Device
+    /dev/fd*    Floppy disk drives
+    /dev/hd*    IDE(PATA) disks on older systems. Typical motherboards contain 2 IDE
+                connectors or channels, each with a cable with 2 attachment points 
+                for drives. The first drive on the cable is called the master device
+                and the second is called the slave device. The device names are 
+                ordered such that /dev/hda refers to master device on the first 
+                channel, /dev/hdb is the slave device on the first channel; /dev/hdc
+                is the master device on the second channel, and so on. A trailing
+                digit indicates the partition number on the device. For example.
+                /dev/hda1 refers to first partition on the first hard drive on the
+                system, while /dev/hda refers to the entire drive
+    /dev/lp*    Printers
+    /dev/sd*    SCSI disks. On modern Linux systems, the kernel treats all disk-like
+                devices(including PATA/SATA hard disks, flash drives, and USB mass
+                storage devices such as portable music players and digital cameras)
+                as SCSI disks. The rest of the naming system is similar to the older
+                /dev/hd* naming scheme
+    /dev/sr*    Optical drives(CD/DVD readers and burners)
+Symbolic links such as /dev/cdrom, /dev/dvd, and /dev/dvd which point to actual device files provide convenience
+
+Determining Device Names on a System without automount
+    interactively tail /var/log/messages or /var/log/syslog
+        sudo tail -f /var/log/messages
+    Plug in the removable media
+    Almost immediately, the kernel will notice the device and probe it
+    After the display pauses again, Ctrl-C
+    THe interesting parts of the output are the repeated references to [sd/hd/lp,etc]
+    This tells the device name and the partition name if any
+    Mount the device

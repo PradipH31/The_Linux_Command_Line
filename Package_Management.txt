@@ -1,0 +1,75 @@
+Major Packaging Systems
+    Debain-style(.deb)
+        Debian, Ubuntu, Linux Mint, Raspbian
+    Red Hat-style (.rpm)
+        Fedora, CentOS, Red Hat Enterprise, OpenSUSE
+
+Package File is the basic unit of software in a packaging system
+    -a compressed collection of files that comprise the software package
+    -includes metadata about package, such as text description and contents of the package, pre- and post-installation scripts
+    -created by the package maintainer
+        -gets the source code from upstream provider(author), compiles, and creates metadata and required files
+
+Repositories contain packages to be made available to users
+    Different repositories exist for different stages of development(testing, development, etc)
+    Repositories for 3rd party software
+
+Programs rely on shared libraries, called dependencies
+
+Package management usually consist of 2 types of tools
+    Low-level(handle installing and removing package files)
+    High-level(metadata search and dependency resolution)
+        Distribution    Low-level tools     High-level tools
+        Debain based    dpkg                apt-get, apt, aptitude
+        Red-Hat based   rpm                 yum, dnf
+
+Common Package Management Tasks
+    Finding a Package in a Repository
+        Using a high-level tool
+        Style       Command(s)
+        Debian      apt-get update
+                    apt-cache search search_string
+        Red Hat     yum search search_string
+    Installing a Package from a Repository
+        Using a high-level tool
+        Style       Command(s)
+        Debian      apt-get update
+                    apt-get install package_name
+        Red Hat     yum install package_name
+    Installing a Package from a Package File
+        Using a low-level tool
+        Style       Command(s)
+        Debian      dpkg -i package_file
+        Red Hat     rpm -i package_file
+    Removing a Package
+        Using high-level tool
+        Style       Command(s)
+        Debian      apt-get remove package
+        Red Hat     yum erase package_name
+    Updating Packages from a Repository
+        Using high-level tools
+        Style       Command(s)
+        Debian      apt-get update; apt-get upgrade
+        Red Hat     yum update
+    Updating Package from a Package File
+        Using low-level tools
+        Style       Command(s)
+        Debian      dpkg -i package_file
+        Red Hat     rpm -u package_file
+    Listing installed packages
+        Style       Command(s)
+        Debian      dpkg -l
+        Red Hat     rpm -qa
+    Determining whether a package is installed
+        Using low-level tools
+        Style       Command(s)
+        Debian      dpkg -s package_name
+        Red Hat     rpm -q package_name
+    Displaying information about an installed package
+        Style       Command(s)
+        Debian      apt-cache show package_name
+        Red Hat     yum info package_name
+    Finding which package installed a file
+        Style       Command(s)
+        Debian      dpkg -S file_name
+        Red Hat     rmp -qf file_name

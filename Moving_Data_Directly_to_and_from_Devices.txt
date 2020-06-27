@@ -1,0 +1,46 @@
+If we treat a disk drive as simply a large collection of data blocks, we could perform useful tasks, such as cloning devices
+
+The dd program performs this task
+It copies blocks of data from one place to another
+
+dd(data definition/destroy disk)
+    dd if=input_file of=output_file [bs=block_size [count=blocks]]
+
+    If we have 2 USBs of same size and wanted to clone one to another(sdb and sdc)
+        dd if=/dev/sdb of=/dev/sdc
+            If only one device was connected, we could copy the contents to a file for later copyinh
+            dd if=/dev/sdb of=flash_drive.img
+
+
+Creating CD-ROM images
+    Writing a recordable CD-ROM (either a CD-R or CD-RW) consists of 2 steps
+        Creating an ISO image file that is the exact file system image of the CD-ROM
+        Writing the image file onto the CD-ROM media
+
+Creating an Image Copy of a CD-ROM
+Making an iso image of an existing CD-ROM in a local file
+    dd if=/dev/cdrom of=ubuntu.iso
+
+Creating an Image from a Collection of Files
+To create a iso containing contents of a directory, we use geniso command
+    geniso -o cd-rom.iso -R -J ~/cd-rom-files
+        -R      adds metadata for Rock Ridge extensions, allowing use of long filenames and POSIX-style file permissions
+        -J      enables Joliet extensions, permitting long filenames for Windows
+
+Writing CD-ROM Images
+Mounting an ISO Image Directly
+We can mount an ISO image that we have on our hard disk(this means that we have already created an iso file) and treat it as an optical media
+    mount -t iso9660 -o loop image.iso /mnt/iso_image
+Remember to unmount
+
+Blanking a Rewritable CD-ROM
+Rewritable CD-ROM media needs to be erased or blanked before it can be reused
+We need to specify the device name and the type of blanking to perform(most common is fast)
+    wodim dev=/dev/cdrw blank=fast
+
+Writing an Image
+wodim dev=/dev/cdrw image.iso
+
+Verifying integrity of an ISO image
+The most common method of checksum generation is md5sum program
+    md5sum image.iso

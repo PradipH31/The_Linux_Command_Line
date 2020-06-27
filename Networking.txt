@@ -1,0 +1,29 @@
+ping
+    sends an ICMP ECHO_REQUEST to a specified host
+    Most networking devices will reply to it
+        ping linuxcommand.org
+    ping sends packets at a specified interval (1 second default) until it is interrupted
+    After interruption, ping prints the performance statistics
+        A properly performing network exhibits 0 percent packet loss
+
+traceroute/tracepath
+    lists all the hops network traffic takes to get from the local system to a specified host
+        traceroute slashdot.org
+    We can see number of routers traversed
+    Routers that provide identifying information give hostnames, IP address and performance data
+    Routers that don't provide information give **
+        In cases routing information is blocked, we can overcome either by -T or -I
+
+ip
+    makes use of the full range of networking features available in modern Linux kernels
+    We can examine a system's network interfaces and routing table
+        ip a
+            We see that our test system has 2 network interfaces
+            The first, called lo, is the loopback interface, a virtual interface that the system uses to talk to itself, and the second, eth0 is the Ethernet interface
+    When performing casual network diagnostics, the important things to look for are presence of the word UP in the first line for each interface, indicating that the network interface is enabled, and the presence of a valid IP address in the inet field on the third line
+    For systems usign DHCP, a valid IP address in this field will verify that DHCP is working
+
+netstat
+    used to examine various network settings and statistics
+    Using -ei, we can examine the network interfaces in our system
+    Using -r displays the kernel's network routing table

@@ -1,0 +1,37 @@
+To reformat a device, we
+    (optional)create a new partition layout if the existing one is not to our liking
+    Create a new, empty file system on the drive
+
+Manipulating Partitions with fdisk
+fdisk allows interaction(editing, deleting, creating partitions) with disk-like devices at a very low level
+To work with our device, we must first unmount it (if needed) and then invoke the fdisk program
+    sudo umount /dev/sdb1
+    sudo fdisk /dev/sdb1
+    Now, we examine the partition with p
+        To change the partition to a Linux partition,
+            finding out the ID for Linux partitions
+                l   list known parition type
+                    83      Linux
+            changing the partition id
+                t   change a partition's id
+                    Select parition 1
+                    83
+            w   write changes to the physical device
+
+Creating a New File System with mkfs
+mkfs creates file systems in a variety of formats
+Creating an ext4 file system
+    sudo mkfs -t ext4 /dev/sdb1
+        -t      specify type
+
+Testing and Repairing File Systems
+    In /etc/fstab, we saw the order field
+    Each time the system boots, it routinely checks the integrity of the file systems before mounting them
+    This is done by the fsck program(file system check)
+    The last number in fstab entry specifies the order in which the devices are to be checked first, followed by the home and boot file systems
+    Devices with last digit 0 are not routinely checked
+
+    fsck can also repair corrupt file systems @s`with varying degrees of success, depending on the amount of damage
+    On Unix-like file systems, recovered portions of files are placed in lost+found directory, located in the root of each file system
+
+        sudo fsck /dev/sdb1

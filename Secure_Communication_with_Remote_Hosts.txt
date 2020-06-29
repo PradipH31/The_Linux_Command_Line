@@ -1,0 +1,33 @@
+ssh
+    authenticates that the remote host is who it says it is
+    encrypts communication between local and remote hosts
+
+SSH server listens on port 22
+The SSH client is ssh
+    ssh remote-server
+        attempts to login as the local user
+        The first time a connection is attempted, a message indicates that the authenticity of the remote host cannot be established as the client has never seen this remote host before
+        Accept the credentials and enter the password
+    exit to exit the ssh session
+
+Logging in as different user
+    ssh user@remote_server
+
+Unsuccessful authentication of remote host
+    Causes can be a mitm or remote system has changed somehow
+    If the remote system has been changed, remove the obselete keys
+
+Executing single command on the remote system
+    ssh remote_system command
+
+Redirecting the output
+    To local file
+        ssh remote-sys 'command' > file
+    To remote file
+        ssh remote-sys 'command > file'
+
+                            scp & sftp
+scp(ssh cp)
+    scp remote-server:file .
+sftp(ssh ftp)
+    doesnot require a ftp server

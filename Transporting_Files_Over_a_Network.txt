@@ -1,0 +1,18 @@
+ftp
+    used to communicate with FTP servers, machines that contain files that can be uploaded and downloaded over a network
+    is insecure because it sends account names and passwords in cleartext
+    So, all FTP done over the internet is done by anonymous servers
+        anonymous server allows anyone to login using the name "anonymous" and a meaningless password
+                    Using a ftp server
+    ftp ftp_server
+    Name:   anonymous
+    Password:   anything(some servers want it in the form of an email address)
+    cd directory_to_download_from
+    ls
+    lcd Downloads
+        Change local directory to Downloads
+    get file
+    bye
+
+wget
+    wget url

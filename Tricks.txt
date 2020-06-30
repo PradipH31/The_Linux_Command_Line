@@ -2,3 +2,7 @@ If we need to truncate a file,
     > file
 tty - teletype
 pstree
+While using xargs,
+    Linux accepts newline characters and embedded spaces as part of a filename(which will be delimted and interpreted differently in xargs)
+    So, use -print0 with find to use null character as argument separator
+        and --null with xargs to set nill character as argument separator

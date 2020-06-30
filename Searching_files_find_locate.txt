@@ -1,0 +1,125 @@
+locate
+    searches a database of pathnames and outputs every name that matches the given substring
+    Examples
+        locate /bin/zip
+            Return the list containing programs that start with zip
+        locate zip | grep bin
+            Return the list containing programs that contain zip and bin
+    the database is created and updated by updatedb
+
+find
+    searches a given directory and its subdirectories for files based on a variety of attributes
+    find with no argument lists all the subdirectories and files
+        find is used with options, tests and actions
+                                                Tests
+        Test for a list of directories:
+            find ~ -type d | wc
+        Test for normal files:
+            find ~ -type f | wc
+                find file types:
+                File type   Description
+                b           Block device
+                c           Character device
+                d           Directory
+                f           Regular file
+                l           Symbolic link
+        Test for name
+            find ~ -type f -name "*.jpg"
+        Test for size
+            find ~ -type f -name "*.jpg" -s +1M
+            + means larger than, - means smaller than and no sign means match the size
+        Common tests
+        -user
+        -iname(case insensitive name)
+
+                                                Operators
+        Logical operators like and, or, not
+        Example:
+            To find out if all files and directories are secure, we would look for insecure files and directories, meaning files which are not 0600 and directories that are not 0700
+            To do this,
+                find ~ \( -type f -not -perm 0600 \) -or \( -type d -not -perm 0700 \)
+        Logical Operators used with find
+        Operator    Description
+        -and        Match if the tests on the both sides of the operator are true, can be shortened to -a
+                    When no operator
+        -or         Match if a test on either side of the operator is true, can be shortened to -o
+        -not        Match if the test following the operator is false, can be shortened to !
+        ()          Group tests and operators together to form larger expressions, used to control the precedence of logical evaluations 
+                    Must be escaped when using on the command line with \
+        In the above example, -type -f not -perm 0600 is actually -type f and -not -perm 0600, since -a is implied, it is not included
+            When using logical operators with 2 expressions,
+                expr1 -operator expr2
+            The first expression will always be performed; but not the second expression
+            Result of expr1     Operator    expr2
+            True                -and        always performed
+            False               -and        never performed
+            True                -or         never performed
+            False               -or         always performed
+
+                                            Predefined Actions
+            Actions         Description
+            -delete         delete the matching files
+            -ls             perform ls -dils on the matching file, send output to stdout
+                            ls -dils is performed on a single or multiple directories
+            -print          Output the full pathname of matching file to stdout(default action)
+            -quit           Quit if a match is made
+
+            find ~ is same as find ~ -print
+            The actions are included at the last of the command if there are tests to perform
+            Always test the files with -print before using -delete
+            
+            The operator is also implied in the predefined actions
+            find ~ -type f -and -name '*.bak' -and -print
+            find ~ -type f -name '*.bak' -print
+
+                                            User-defined Actions
+            Traditional method
+                -exec command {} ;
+                    command is the command, {} is the symbolic representation of the current pathhame, semicolon is a required delimeter indicating the end of command
+                Examples:
+                    find ~ -type f -name '*.bak' -exec rm '{}' ';'
+                Using -ok instead of -exec, the user is prompted before execution of each specified command
+                        Improving efficiency
+                -exec launches a new instance of specified command each time a match is found, so to launch a single instance only,
+                    Alternate way
+                        Changing the ; at the end to a +
+                        Examples:
+                            find ~ -type f -name '*.bak' -exec ls -l '{}' +
+
+
+                                    Traditional Method of launching a single instance but newer method of user-defined action
+            xargs
+                accepts input from stdin and converts it into an argument list for a specified command
+                Example:
+                    find ~ -type f -name '.*bak' | xargs ls -l
+
+    find scope options
+    Option              Description
+    -depth              process a directory's files before directory(automatically applied when --delete action is used)
+    -maxdepth levels    maximum level find will descend into a directory tree when performing tests and actions
+    -mindepth levels    minimum level find will descend into a directory tree when performing tests and actions
+    -mount              not to traverse directories mounted on other filesystems
+    -noleaf             don't assume Unix-like file system
+
+
+
+Playground
+    mkdir -p playground/dir-{001..100}
+    touch playground/dir-{001..100}/file-{A..Z}
+    find -type f -name 'file-A'
+        Finding based on modification time
+    touch playground/timestamp
+        Viewing system information about a file
+    stat playground/timestamp
+        Updating files
+    touch playground/timestamp
+    stat playground/timestamp
+        Updating files with find
+    find playground -type f -name 'file-B' | exec touch '{}' ';'
+        Searching based on last modified
+    find playground -type f -newer playground/timestamp
+        Searching bad directories or files
+    find playground \( -type f -not -perm 0600 \) -or \( -type d -not -perm 0700 \)
+            All files and directories are returned as none are good
+        Making good files and directories
+    find playground \( -type f -not -perm 0600 exec chmod 0600 '{}' ';' \) \( -type -d -not -perm 0700 -exec chmod 0700 '{}' ';' \)

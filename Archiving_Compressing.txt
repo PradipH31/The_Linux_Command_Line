@@ -1,0 +1,122 @@
+Tools to manage collections of files(compressing, archiving and file synchronizing)
+
+Compressing Files
+    Data compression is the process of removing redundancy from data
+    For example
+        We have an entirely black picture file with dimensions of 100 by 100 pixels
+        In terms of data storage (assuming 3 bytes per pixel, or 24 bits), the image will occupy 30,000 bytes of storage
+                    100 x 100 x 3 = 30,000
+        An image that is all one color contains redundant data
+        We could encode data in a way that we describe the fact that we have a block of 10,000 black pixels
+        So, instead of storing 30,000 zeroes(representation of black color in image), we could compress the data into the number 10,000, followed by a zero to represent our data
+        Such a data compression scheme is called run-length encoding and is one of the most rudimentary compression techniques
+        Compression algorithms fall into 2 general categories:
+            Lossless
+                preserves all the data contained in the original 
+            Lossy
+                removes data as the compression is performed to allow more compression to be applied
+                the restored file doesn't match the original version
+                For example:JPEG(images), MP3(music)
+
+                                                Lossless compression
+    gzip
+        compress 1 or more files(replaces the original file with a compressed version of the original)
+        restore compressed files with gunzip
+        Usage:
+                gzip file
+                gunzip file.gz
+        Options:
+                -d      decompress
+                -f      force
+                -l      list compression statistics
+                -r      recursive
+                -t      test integrity of compressed file
+                -number amount of compression(1-9) default is 6
+        can be used with stdout and stdin
+        Example
+            ls -l /etc | etc gzip > foo.txt
+        gunzip doesn't require extension as it requires .gz file
+        Viewing compressed file
+                gunzip -c foo.txt | less
+                zcat and zless are programs for zipped files
+    bzip2
+        uses a different compression algorithm that achieves higher levels of compression at the cost of compression seed
+        denoted with .bz2
+        Usage:
+            bzip2 file
+            bunzip2 file.bz2
+        can be used same as gzip(except for -r)
+        bunzip2 and bzcat can be used for decompressing fils
+        bzip2recover will try to recover damaged .bz2 files
+
+Note: Don't gzip picture.jpg
+      a compressed file has a overhead to describe the compression ,as a result, the compression may result in a larger file
+
+Archiving Files
+    often used in conjunction with compression
+    process of gathering up many files and bundling them together into a single file 
+
+    tar
+            short for tape archive
+            .tar(plain tar archive), .tgz(tar archive and a zipped archive)
+            tar mode[options] pathname
+        Common modes
+            c       create an archive from a list of files or directories
+            x       extract an archive
+            r       Append specified pathnames to the end of the archive
+            t       List the contents of an archive
+        
+        Playground
+            mkdir -p playground/dir-{001..100}
+            touch playground/dir-{001..100}/file-{A..Z}
+            tar cf playground.tar playground
+                The mode must be specified first
+                dash is not required
+            mkdir foo
+            cd foo
+            tar xf ../playground.tar
+                The files and directories take on the ownership of the user performing the restoration
+                The default for pathnames is relative, rather than absolute
+
+        Extracting a single file
+            tar xf archive.tar pathname(file)
+                Using wildcard in tar xf
+                tar xf ../playground2.tar --wildcards 'home/me/playground/dir-*/file-A)'
+        often used with find
+            find playground -name 'file-A' -exec tar rf playground.tar '{}' '+'
+                we find file-A and using -exec, we add matching files to the archive playground.tar
+        can also make use of standard input and output
+            find playground -name 'file-A' | tar cf - --files-from=- | gzip > playground.tgz
+                We use find to produce a list of matching files and piped them to tar
+                If filename - is specified, it is taken to mean stdout or stdin
+                --files-from causes tar to read pathnames from a file rather than the command line
+                The archive produced from tar is piped into gzip to create compressed archive playground.tgz
+                    .tgz extension is the conventional extension of gzip-compressed tar files
+                    .tar.gz is also used
+
+        modern tar supports gzip and bzip2 compression directly with the use of z and j options
+        Example
+            find playground -name 'file-A' | tar czf playground.tgz -T -
+            find playground -name 'file-A' | tar cjf playground.tbz -T -
+
+        Usage of stdin and stdout with tar & networks
+            ssh remote-sys 'tar cf -Documents' | tar xf -
+
+Zip
+    both a compression tool and an archiver
+    Usage:
+        zip options zipfile file
+        zip -r playground.zip playground
+            -r for recursion
+        unzip file
+    When using zip with an existing archive, it is updated rather than replaced
+    Selectively listing and extracting from a zip archive
+        unzip -l playground.zip playground/dir-078/file-Z
+        unzip playground.zip playground/dir-078/file-Z
+    Using stdin & stdout
+        find playground -name 'file-A' | zip -@ file-A.zip
+        -@ makes it possible to pipe in zip
+    ls -l /etc/ | zip ls-etc.zip -  
+        - means use stdin for input file
+    unzip -p ls-etc.zip | less
+        -p allows output to be sent to stdout as pipe

@@ -1,0 +1,40 @@
+Keeping directories synchronized with other directories on the local or remote system
+The preferred tool is rsync
+rsync
+    Usage
+        rsync options source destination
+            where source and destination can be
+                a local file or directory
+                a remote file or directory in the form of [user@]host:path
+                a remote rsync server specified with a URI of rsync://[user@]host[:port]/path
+            remote-to-remote copying is not supported
+        rsync -av playground foo
+            This copies the directory playground to foo, if we add /, it will copy the contents of the directory only
+            -a      for archiving-causes recursion and preservation of file attributes
+        If we run the command again, we see no files have been copied as rsync detected no differences between playground and foo
+
+    Practical Example
+        Backing up from system to external dirve
+            mkdir /media/BigDisk/backup
+            sudo rsync -av --delete /etc /home /usr /local /media/BigDisk/backup
+                --delete remvoes files that may have existed on the destination but not on the source
+
+    Usage over network
+        2 methods
+            1st
+                another system that has rsync installed and remote shell such as ssh
+                Assuming a folder backup on the another system
+                sudo rsync -av --delete --rsh=ssh /etc /home /usr/local remote-sys:/backup
+                        --rsh=ssh instructs rsync to use ssh as remote shell
+                        remote host has been specified
+            2nd
+                using an rsync server
+                rsync can be configured to listen as a daemon
+                often done to allow mirroring of a remote system
+                Example
+                    Duke University keeps a local mirror of Fedora packages
+                    Using rsync to mirror their contents
+                        mkdir fedora-devel
+                        rsync --av -delete rsync://archive.linux.duke.edu/fedora/linux/development/rawhide/Everything/x86_64/os fedora-devel
+                            Here, the protocol used is rsync
+                            Remote hostname is archive.linux.duke.edu

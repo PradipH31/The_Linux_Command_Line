@@ -1,0 +1,130 @@
+Regular expressions are symbolic notations used to identify patterns in text
+
+grep
+    grep is derived from phrase "global regular expression print"
+    searches text files for text matching a specified regular expression and outputs any line containing a match to stdout
+    Usage:
+        grep [options] regex [file..]
+    Common grep options
+        Option  Long Option                 Description
+        -i      --ignore-case               Ignore case
+        -v      --invert-match              Invert match
+                                            print every line that doesn't contain a match
+        -c      --count                     Print number of matches instead of lines themselves
+        -l      --files-with-matches        Print name of each file that contains match instead of lines themselves
+        -L      --files-without-matches     Print only names of files that do not contain matches
+        -n      --line-number               Prefix each matching line with the number of the line within the file
+        -h      --no-filename               For multiple searches, suppress the output of filenames
+
+    Some textfiles to use
+        ls /bin > dirlist-bin.txt
+        ls /usr/bin > dirlist-usr-bin.txt
+        ls /sbin > dirlist-sbin.txt
+        ls /usr/sbin > dirlist-usr-sbin.txt
+    Examples:
+        grep bzip dirlist*.txt
+        grep -l bzip dirlist*.txt
+            list the files that contain the match
+        grep -L bzip dirlist*.txt
+            List the files that don't contain the match
+
+    Metacharacters and Literals
+        grep has been using regular expressions
+        The characters in the string bzip are all literal characters, in that they match themselves
+        Regular expression metacharacters consist of the following:
+            ^ $ . [ ] { } - ? * + ( ) | \
+            All other characters are considered literals
+            The backslash is used in a few cases to create metasequences, as well as allowing metacharacters to be escaped and treated as literals
+        When we pass regular expressions containing metacharacters on the command line, it is vital to enclose them in quotes to prevent the shell from expanding them
+
+Metacharacters:
+                                                    The Any Character
+The dot(.) or period character is used to match any character
+If we include it in a regular expression, it will match any character in that character position
+Usage:
+   grep -h '.zip' dirlist*.txt
+        -h  suppresses filename
+    The . character increased the length of our required match to 4 characters, so zip program will not match
+    If any file had extension .zip, it would have matched
+
+                                                    Anchors
+The caret(^) and dollar signs ($) are treated as anchors in regular expressions
+This means match occurs only when regular expression is found at beginning of line (^) or end of line($)
+Usage:
+    grep -h '^.zip' dirlist*.txt
+        Returns matches starting with zip
+    grep -h '.zip$' dirlist*.txt
+        Returns matches ending with zip
+    grep -h '^.zip$' dirlist*.txt
+        Returns matches containing only zip
+
+                                                    Bracket Expressions and Character Classes
+We can match a single character from a specified set of characters by using bracket expressions
+With bracket expressions, we can specify a set of characters (including characters that would otherwise be interpreted as metacharacters)
+Usage:
+    grep -h '[bg]zip' dirlist*.txt
+        Returns matches which are bzip or gzip
+A set may contain any number of characters and metacharacters lose their special meaning when placed within brackets
+However, there are 2 metacharacters that have special meaning when used in brackets
+    ^       used to indicate negation
+    -       used to indicate character range
+
+                            Negation
+If the first character in a bracket expression is a caret(^), the remaining characters in the bracket must not be present at the given character position
+Usage:
+    grep -h '[^bg]zip' dirlist*.txt
+        Returns the matches that contain the string zip preceded by any character except b or g
+        It also changes the match requirement to be 4 characters
+        must be the first character within a bracket expression
+
+                            Traditional Character Ranges
+Regular expression to find every file in our lists beginning with an uppercase letter,
+    grep -h '[ABCDEFGHIJKLMNOPQRSTUVWXYZ]' dirlist*.txt
+Another way
+    grep -h '^[A-Z]' dirlist*.txt
+Any range of characters can be expressed can be expressed this way including multiple ranges, such as 
+    grep -h '^[A-Za-z0-9]' dirlist*.txt
+        matches records starting with letters and numbers
+As dash has special meaning, it's speciality can be removed by making it the first character in the bracket
+    grep -h '[-AZ]' dirlist*.txt
+        matches records that start with -, A, and Z
+
+                            POSIX Character Classes
+Problem with traditional character ranges
+    ls /usr/sbin/[ABCDEFGHIJKLMNOPQRSTUVWXYZ]*
+        Returns the programs starting with uppercase letters
+    ls /usr/sbin/[A-Z]*
+        Returns programs starting with lowercase letters as well
+            Reasons for this
+                When UNIX was developed, it used ASCII which had (64-95) uppercase letters and some punctuation and (96-127) lowercase and some punctuation
+                So, collation order using ASCII was like
+                    ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+                Dictionary collation order is
+                    aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ
+                When Unix became popular, it needed to support other languages as well
+                For this purpose, POSIX standards introduced a new concept called locale, which could be adjusted to select character set needed for particular location
+                echo $LANG
+                    view the locale 
+                With these settings, POSIX-compliant applications use a dictionary collation rather than ASCII order
+                    Character range [A-Z] include all letters except a
+
+To partially work around this problem, the POSIX standard includes a number of character classes that provide useful ranges of characters:
+    Character Class     Description
+    [:alnum:]           alphanumeric characters, equivalent to [A-Za-z0-9]
+    [:word:]            same as [:alnum:], with the addition of underscore(_)
+    [:alpha:]           alphabetic charcters[a-zA-Z]
+    [:blank:]           space and tab characters
+    [:cntrl:]           ASCII control ocdes[0-31,127]
+    [:digit:]           numbers 0-9
+    [:graph:]           visible characters, ASCII [33-126]
+    [:lower:]           lowercase letters
+    [:punct:]           punctuation characters, ASCII: [~!"#$&'()*+,./:;<=>?@[\\\]_\{|}~]
+    [:print:]           printable characters, [:print:] plus space character
+    [:space:]           whitespace characters including space, tab, carriage return, newline, vertical tab, and form feed
+                        ASCII [\t\r\n\v\f]
+    [:upper:]           uppercase characters
+    [:xdigit:]          hexadecimal characters
+Even with character classes, there is still no way to express partial ranges, like [A-M]
+Using character classes for our example,
+    ls /usr/sbin/[[:upper:]]*
+        This is not regular expression, rather shell expansion

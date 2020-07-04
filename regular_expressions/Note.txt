@@ -1,0 +1,124 @@
+                        POSIX Basic vs. Extended Regular Expressions
+POSIX splits regular expression implementations into 2 kinds:
+    basic regular expressions(BRE)
+    extended regular expressions(ERE)
+The features covered in the regular expression file implements BRE
+grep also supports bre
+
+Difference between BRE & ERE
+    metacharacters
+    BRE considers only the following to be metacharacters
+        ^ $ . [ ] *
+        All other characters are considered literals
+    ERE considers the following as metacharacters including BRE metacharacters
+        ( ) { } ? + |
+The characters .{} are treated as metacharacters in BRE if they are escaped
+            whereas with ERE, escaping any metacharacter causes it to be treated as a literal
+
+Using ERE with grep
+GNU grep with -E
+
+                Alternation
+allows a match to occur from among a set of expressoins
+Example:
+    echo "AAA" | grep AAA
+    echo "BBB" | grep AAA
+Alternation is signified by the vertical-bar metacharacter
+    echo "AAA" | grep -E 'AAA|BBB'
+    echo "BBB" | grep -E 'AAA|BBB'
+    echo "CCC" | grep -E 'AAA|BBB'
+    echo "CCC" | grep -E 'AAA|BBB|CCC'
+Combining alternation with regular expression elements with ()
+    grep -Eh '^(bz|gz|zip)' dirlist*.txt
+        matches filenames that start with either bz, gz or zip
+        If the parentheses were missing, the match would be for any record starting with bz or containing gz or containing zip
+
+                Quantifiers
+specify number of times an element is matched
+    ?--Match an Element 0 or 1 time
+        in effect, means make the preceding element optional
+        when checking a phone number for validity, the format may be
+            (nnn) nnn-nnnn
+            nnn nnn-nnnn
+        The ERE could be like this:
+            ^\(?[0-9][0-9][0-9]\)? [0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]$
+                we follow parentheses with ? to indicate to be matched 0 or 1 time
+                Because parentheses are metacharacters in ERE, we escape them to treat them as literals
+        Usage:
+            echo "(555) 123-3466" | grep -E '^\(?[0-9][0-9][0-9]\)? [0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]'
+
+    *--Match an Element 0 or more times
+        denote an optional item; the item may occur any number of times, not just once
+        Example:to check for a sentence(first uppercase, then any number of uppercase, lowercase and spaces, then a period)
+            [[:upper:]][[:upper:][:lower:] ]*\.
+                items in the expression:
+                    bracket expression containing upper
+                        set of all uppercase letters
+                    bracket expression containing upper, lower and a space
+                        trailed with an *
+                    a period
+
+    +--Match an Element 1 or more times
+        requires at least 1 instance to cause a match
+        Example:match lines consisting of groups of 1 or more aplhabetic characters separated by single spaces
+            ^([[:alpha:]]+ ?)+$
+                This expression doesn't match line a b 9 because it contains a nonalphabetic character
+                This expression doesn't match abc  d beacuse more than 1 space character separates c and d
+
+    {}--Match an Element a Specific Number of Times
+        used to express minimum and maximum numbers of required matches
+        specified as follows
+            Specifier   Meaninng
+            {n}         Match preceding element if it occurs exactly n times
+            {n,m}       Match preceding element if it occurs between n and m times
+            {n,}        Match preceding element if it occurs n or more than n times
+            {,m}        Match preceding element if it occurs no more than m times
+        Example: phone number verification
+            ^\(?[0-9]{3}\)? [0-9]{3}-[0-9]{4}$
+
+
+
+                                Using Regular Expressions Practically
+Validating a Phone List with grep
+    Creating a phone list with loop and random
+        for i in {1..10}; do echo "(${RANDOM:0:3}) ${RANDOM:0:3}-${RANDOM:0:4}" >> phonelist.txt; done
+            Repeat the command few times and there will be some malformed numbers
+    Using grep to display only the invalid numbers
+        grep -Ev '^\(?[0-9]{3}\)? [0-9]{3}-[0-9]{4}$' phonelist.txt
+            -v produce an inverse match
+
+
+Finding Ugly Filenames with find
+    find supports test based on regular expression
+    while grep prints a line when the line contains a string that matches an expression, find requires the pathname exactly match the regular expression
+    Offensive filenames would include characters except
+        [-_./0-9A-Za-z]
+        Using find
+            find . -regex '.*[^-_./0-9a-zA-Z].*'
+                Because find requires exact match, we add .* at the beginning and end
+                    What we are searching for are offensive characters and without the .*, filenames containing only offensive characters will match
+                We use a negated bracket expression [^ at the middle expression
+
+Searching files with locate
+    locate supports basic(--regexp) and extended(--regex) regular expressions
+    Examples
+        locate --regex '/bin/(bz|gz|zip)'
+
+Searching for text with less and vim
+    Pressing / followed by a regular expression will perform a search
+    Searching for valid phone numbers in phonelist.txt in less
+        /^\([0-9]{3}\) [0-9]{3}-[0-9]{4}$
+            highlights the strings that match, leaving invalid ones easy to spot
+    vim supports basic regular expressions, so our expressions would look like this:
+        /^([0-9]\{3\}) [0-9]{\3\}-[0-9]\{4\}$
+            BRE considers only [] to be metacharacters
+            ERE considers all to be metacharacters
+
+
+Additional Programs that use regular expressions
+    Searching manual pages for programs
+        cd /usr/share/man/man1
+        zgrep -El 'regex|regular expression' *.gz
+            zgrep provides a front end for grep, allowing to read compressed files
+            We search the compressed section 1 man page files in their usual locations
+                The result is a list of files containing either the string regex or the string regular expression

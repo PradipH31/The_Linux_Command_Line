@@ -7,3 +7,7 @@ While using xargs,
     So, use -print0 with find to use null character as argument separator
         and --null with xargs to set nill character as argument separator
 a compressed file has a overhead to describe the compression ,as a result, the next compression may result in a larger file
+Dictionary:
+    /usr/share/dict
+    Solving crosswords:
+    grep -i '^..j.r$' /usr/share/dict/words

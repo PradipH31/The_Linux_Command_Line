@@ -1,0 +1,94 @@
+sort
+    sorts the contents of stdin, or file/s specified and sends results to stdout
+    Using same technique with cat, we can demonstrate processing of stdin directly from keyboard
+        sort > foo.txt
+        c
+        b
+        a
+        cat foo.txt
+        a
+        b
+        c
+    As sort can accept multiple files, we can merge multiple files into one single sorted whole
+        sort file1 ii2 i211 > final_sorted_list.txt
+    Common options
+        Options     Long option                 Description
+        -b          --ignore-leading-blanks     by default,sorting is performed on entire line
+                                                this causes sort to ignore leading spaces and start
+                                                on the first non-whitespace character
+        -f          --ignore-case               ignore case
+        -n          --numeric-sort              perform sort based on numeric evaluation of a string
+        -r          --reverse                   sort in reverse order
+        -k          --key=field1[,field2]       sort based on a key field located from field1 to
+                                                field2 rather than the entire line
+        -m          --merge                     Treat each argument as the name of a presorted file
+                                                Merge multiple files into a single sorted result
+                                                without performing any additional sorting
+        -o          --output=file               Send sorted output to file rather than stdout
+        -t          --field-separator=char      Define field-separator character(default spaces or tabs)
+    Looking at the n option, it is possible to sort values based on numeric values rather than lexographically
+        Sorting results of du to determine largest users of disk space
+            du -s /usr/share/* | head
+                -s for summary, not all files
+            du -s /usr/share/* | sort -nr | head
+        This works for numerical values occuring at the beginning of the line, but for say ls,
+            ls -l /usr/bin | head
+            ls -l /usr/bin | sort -nkr 5 | head
+    Most uses of sort involve processing of tabular data
+    How sort defines fields
+        William Shotts
+            sort sees this line as having 2 fields
+                first field contains William
+                second field contains Shotts
+        here, whitespace characters(spaces & tabs) are used as delimeters between fields
+    Looking at the ls output, we can see that the fifth field is the file size
+
+
+For further experiments and use cases, we will consider the following file named distros.txt containing distro name, version number and date of release in MM/DD/YYYY
+
+SUSE      10.2     12/07/2006 
+Fedora    10       11/25/2008 
+SUSE      11.0     06/19/2008 
+Ubuntu    8.04     04/24/2008 
+Fedora    8        11/08/2007 
+SUSE      10.3     10/04/2007 
+Ubuntu    6.10     10/26/2006 
+Fedora    7        05/31/2007 
+Ubuntu    7.10     10/18/2007 
+Ubuntu    7.04     04/19/2007 
+SUSE      10.1     05/11/2006 
+Fedora    6        10/24/2006 
+Fedora    9        05/13/2008 
+Ubuntu    6.06     06/01/2006 
+Ubuntu    8.10     10/30/2008 
+Fedora    5        03/20/2006 
+
+Now, we'll try sorting the file:
+    sort distros.txt
+        The text has been sorted according to letters and numbers, the problem occurs in sorting of Fedora version numbers
+        Because 1 comes before 5 in the character set, version 10 ends up being at the top whjle version 9 falls to the bottom
+        To fix this, we will sort on multiple keys
+        We perform an alphanetic sort on the first field and then a numeric sort on the second field
+        sort can use multiple -k options and a key may include a range of fields(if unspecified, the key begins with the specified field and extends to the end of line)
+
+Multikey sort
+    sort --key=1,1 --key=2n distros.txt
+    sort -k 1,1 -k 2n
+        In the first key option, we specified a range of fields to include in the first key(start at key 1 and end at key 1)
+        In the second key, we specified 2n, which means field 2 is the sort key and the sort key should be numeric
+            An option letter may be included at the end of a key specifier to indicate the type to sort to be performed
+                same as the global options for the sort programs: b(ignore leading blanks),n (numeric sort), r(reverse sort), and so on
+
+    The 3rd field in our list contains a date in an inconvenient format for sorting
+    On computers, dates are usually formatted in YYYY-MM-DD order to make chronological sorting easy
+    Sorting this list in chronological order
+        sort key option allows a specification of offsets within fields, so we can define key within fields
+        sort -k 3.7nbr -k 3.1nbr -k 3.4nbr distros.txt
+            By specifying -k 3.7, we instruct sort to use a sort key that begins at the 7th character within the 3rd field, which corresponds to the start of the year
+            We specify -k 3.1 and -k 3.4 to isolate the month and day portions of the date
+            We add b to suppress the leading spaces (whose numbers vary from line to line, thereby affecting the outcome of the sort) in the date field
+
+    Some files don't use tabs and spaces as field delimiters; for example, /etc/passwd
+    The fields in this file are delimited with colons (:), we can use -t option to define the field separator character
+    Sorting the passwd file on the 7th field (default shell),
+        sort -t ':' -k 7 /etc/passwd | head

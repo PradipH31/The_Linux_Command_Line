@@ -1,0 +1,28 @@
+tr
+    used to transliterate characters
+    character-based search-and-replace operation
+    Example
+        echo "lowercase letters" | tr a-z A-Z
+        LOWERCASE LETTERS
+    operates on stdin & results to stdout
+    accepts 2 arguments: a set of characters to convert from and a corresponding set of characters to convert to
+    Character sets may be expressed in either ways
+        An enumerated list:ABCDEFGHIJKLMNOPQRSTUVWXYZ
+        A character range:A-Z
+        POSIX character classes:[:upper:]
+    In most cases, both character sets should be of equal length
+        it is possible for first set to be larger than the second, if we want to convert multiple characters to a single charcter
+            echo"lowercase letters" | tr [:lower:] A
+            AAAA
+
+    allows characters to simply be deleted from input stream
+    Example: converting DOS files to UNIX files(carriage return characters need to be removed from end of each line)
+        tr -d '\r' dos_file > unix_file
+
+    delete repeated instances of a character
+        echo "aaaabbbbcccc" | tr -s ab
+        abcccc
+        repeated characters must be adjoining
+
+ROT13
+    echo "abc" | tr a-zA-Z n-za-mN-ZA-M

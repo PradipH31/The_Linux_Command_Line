@@ -1,0 +1,84 @@
+cat
+    cat has a number of options, used to help better visualize text content
+    -A displays non-printing characters in the text like tabs and carriage returns, often presented as end of line in MS-DOS-style text flies and trailing spaces in text
+    Creating a file using cat:
+        cat > filename
+        type the text ENTER then CTRL-D
+    cat -A filename
+        tab character in our text is represented by ^I(CTRL-I), which is the same as a tab character
+        $ appears at the true end of the line, indicating any presence of trailing spaces
+    -n  numbers the lines
+    -s  suppresses output of multiple blank lines
+
+uniq
+    removes any duplicate lines from a sorted file and sends the results to stdout
+    often used in conjunction with sort to clean the output of duplicates
+    only removes duplicates that are adjacent to each other
+    Common uniq options
+        Option  Long option         Description
+        -c      --count             Output a list of duplicate lines preceded by the number of times
+                                    the line occurs
+        -d      --repeated          Output only repeated lines, rather than unique lines
+        -f n    --skip-fields=n     Ignore n leading fields in each line. Fields are separated by
+                                    whitespace as they are in sort; however, unlike sort, uniq has
+                                    no option for setting an alternate field separator
+        -i      --ignore-case       Ignore case during the line comparisons
+        -s n    --skip-chars=n      Skip(ignore) the leading n characters of each line
+        -u      --unique            Output only unique lines
+
+Slicing & Dicing
+    cut
+        used to extract a section of text from a line and output the extracted section to a stdout
+        can accept multiple file arguments or input from stdin
+        cut Selection Options
+            Option      Long Option         Description
+            -c list     --characters=list   Extract the portion of line defined by list(may consist
+                                            1 or more comma-separated numerical ranges)
+            -f list     --fields=list       Extract 1 or more fields from the line as defined by 
+                                            list(may contain 1 or more fields or field range 
+                                            separated by commas)
+            -d delim    --delimeter=delim   When -f is specified, use delim as the field delimiter
+                                            By default, fields must be separated by a single tab
+                        --complement        Extract the entire line of text, except for those 
+                                            portions specified by -c and/or -f
+        cut is best used to extract text from files that are produced by other programs
+        Viewing distros.txt with cat -A
+            cat -A distros.txt
+        If no spaces and delimited by single tab characters
+        Because the file uses tabs rather than spaces, we'll use the -f option to extract a field  
+            cut -f 3 distros.txt
+
+        Our distros file is tab-delimited, so it is best to use cut to extract fields rather than characters
+        When a file is tab-delimited, it is unlikely that each line will contain the same number of characters, which makes calculating character positions within the line difficult or impossible
+        From the above code, we have a field that luckily contains data of identical length
+        Extracting the year from each line
+            cut -f 3 distros.txt | cut -c 7-10
+                We cut characters 7 through 10
+
+    Specifying different field delimiter rather than tab
+        cut -d ':' -f 1 /etc/passwd | head
+Note: To expand tabs into spaces,
+    expand distros.txt | cut -c 23-
+
+    paste
+        adds 1 or more columns of text to a file
+        reads multiple files and combines the fields found in each file to a single stream of stdout
+        Usage Preparation
+            sort -k 3.7 -nbr -k 3.1 -nbr -k 3.4 -nbr distros.txt > distros-by-date.txt
+            cut -f 1,2 distros-by-date.txt > distros-versions.txt
+            cut -f 3 distros-by-date.txt > distros-dates.txt
+        Usage:
+            paste distros-dates.txt distros-versions.txt
+
+    join
+        joins data from multiple files based on a shared key field
+        join is an opeartion associated with relational databases where data from multiple tables with a shared key fields is combined to form a desired result
+        Usage preparation
+            make files with a shared key
+                cut -f 1,1 distros-by-date.txt > distros-name.txt
+                paste distros-dates.txt distros-names.txt > distros-key-names.txt
+
+                cut -f 2,2 distros-by-date.txt > distros-vernums.txt
+                paste distros-dates.txt distros-vernums.txt > distros-key-vernums.txt
+        Usage
+            join distros-key-names.txt distros-key-vernums.txt | head

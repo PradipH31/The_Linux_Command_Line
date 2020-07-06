@@ -11,3 +11,5 @@ Dictionary:
     /usr/share/dict
     Solving crosswords:
     grep -i '^..j.r$' /usr/share/dict/words
+change tabs into spaces
+    expand filename

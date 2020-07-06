@@ -1,0 +1,91 @@
+Comparing text
+    comm
+        compares 2 files and displays the lines that are unique to each one and the lines they have in common
+        produces output in 3 columns, 1st(unique to first file), 2nd(unique to second file), 3rd(common)
+        Option
+            -n      Suppress 1 or multiple columns
+        Usage:
+            cat > file1.txt
+            a
+            b
+            c
+            d
+            cat > file2.txt
+            b
+            c
+            d
+            e
+            comm file1.txt file2.txt
+
+    diff
+        used to detect differences between files
+        often used to examine changes between different versions of program source code and has ability to recursively examine directories of source code(source trees)
+        used to create diff files or patches used by programs such as patch to convert 1 version of a file/s to another version
+
+        Output
+            a terse description of differences between 2 files
+            default format: group of change are preceded by a change command in the form of range operation range to describe the positions and types of changes required to convert the first file to the second file
+                Change commands
+                Change      Description
+                r1ar2       Append the lines of the poition r2 in the second file to the position r1
+                            in the first file
+                r1cr2       Change (replace) the lines at position r1 with the lines at the position
+                            r2 in the second file
+                r1dr2       Delete the lines in the first file at position r1, which would have
+                            appeared at range r2 in the second file
+        Usage
+            diff file1.txt file2.txt
+            1d0
+            < a
+            4a4
+            > e
+        
+        default format is not used widely
+        popular formats are context format (-c) and unified format (-u)
+                                    Context Format
+        diff -c file1.txt file2.txt
+            The output begins with names of 2 files and their timestamps
+            first file is marked with asterisks, and second with dashes
+            groups of changes, including defailt number of surrounding context lines is shown
+            Example:in first group,
+                *** 1,4 ***
+                    indicating lines 1-4 in first flie
+                later
+                --- 1,4 ---
+                    indicating lines 1-4 in second file
+            Within change group, lines begin with either of the indicators below
+                Indicator   Meaning
+                blank       A line shown for context, doesn't indicate a difference between 2 files
+                -           A line deleted, will appear in the first file but not in second flie
+                +           A line added, will appear in the second file but not in first file
+                !           A line changed, 2 versions will be displayed, each in its respective section of change group
+                                    Unified Format
+        diff -u file1.txt file2.txt
+            similar to context format, but more concise
+            different from context with elimination of duplicated lines of context
+            we see filestamps like those of the context format, followed by string @@ -1,4 +1,4  @@
+                indicates the lines in the first file and lines in the second file described in change group
+            then the lines themselves, with default 3 lines of contexot
+            lines start with one of 3 possibel characters
+                Character       Meaning
+                blank           shared by both files
+                -               removed from first file
+                +               line added to first file
+
+    patch
+        used to apply changes to text files
+        accepts output from diff and is generally used to convert older-version files into newer versoin
+        Example
+            While developing Linux kernel, one contributor makes a small changes
+            the whole kernel is not sent, rather the diff file is sent
+            the receiver use patch program to apply changes to own source tree
+        
+        Tp prepare a diff file for use with patch, GNU suggests:
+            diff -Naur old_file new_file > diff_file
+
+        Usage:
+            patch < diff_file
+
+        Example:
+            diff -Naur file1.txt file2.txt > patchfile.txt
+            patch < patchfile.txt

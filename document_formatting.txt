@@ -1,0 +1,61 @@
+2 main families of document formatters dominate the field:
+	descended from the original roff program, nroff and troff
+	based on TEX typesetting system
+	
+	nroff is used to format documents for output to devices that use monospaced fonts
+	troff is used to format documents for output on typesetters, devices used to produce "camera-ready" type for commercial printing
+	roff also includes eqn for mathematical equations and tbl for tables
+
+groff
+	a suite of programs containing GNU implementation of troff
+
+	man page lives in /usr/share/man directory as a gzip-compressed text file
+	Examining uncompressed contents,
+		zcat /usr/share/man/man1/ls.1.gz | head
+	We see markup components in the file
+	man pages are rendered by groff, using the mandoc macro package
+	Using groff to simulate the man command
+		zcat /usr/share/man/man1/ls.1.gz | groff -mandoc -T ascii | head
+	Here, we use groff with options set to specify the mandoc macro package and output driver for ASCII
+	groff can produce output in several formats, if no format is speicifed, PostScript is output by default
+
+
+PostScript is a page description language that is used to describe the contents of a printed page to a typesetter-like device
+If we take output of our command and store it in a file, we can access it with okular or other programs
+	zcat /usr/share/man/man1/ls.1.gz | groff -mandoc > ~/Desktop/ls.ps
+
+Convert the PostScript file to a PDF
+	ps2pdf ~/Desktop/ls.ps ~/Desktop/ls.pdf
+
+
+We are going to use groff and tbl to format tables to typeset distros.txt
+using sed script to add markup to text stream
+	adding necessary markup elements(requests)
+
+					distros-tbl.sed
+# sed script to produce Linux distribution report
+
+1 i\
+.TS\
+center box;\
+cb s s\
+cb cb cb\
+l n c.\
+Linux Distributions Report\
+=\
+Name	Version	Released\
+_
+s/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)$/\3-\1-\2/
+$ a\
+.TE
+
+
+	tbl uses .TS and .TE requests to start and end the table
+	The rows following .TS request define global properties of the table, which, above, are centered horizontally on the page and surrounded by a box
+	The remaining lines of the definition describe the layout of each table row
+
+	Usage:
+		sort -k 1,1 -k 2n distros.txt | sed -f distros-tbl.sed | groff -t -T ascii
+			-t instructs groff to preprocess the text stream with tbl
+			-T instructs groff to output to ASCII rather than default medium, PostScript
+		sort -k 1,1 -k 2n distros.txt | sed -f distros-tbl.sed | groff -t > ~/Desktop/distros.ps

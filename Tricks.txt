@@ -13,3 +13,5 @@ Dictionary:
     grep -i '^..j.r$' /usr/share/dict/words
 change tabs into spaces
     expand filename
+Linux systems include command line programs for file format conversion
+	often named format2format

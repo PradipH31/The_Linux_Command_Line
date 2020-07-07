@@ -1,0 +1,27 @@
+aspell
+    an interactive spelling checker
+    mostly used by other programs that require spellchecking capability, it can also be used as a stand-alone tool
+    Usage:
+        aspell check textfile
+    Example:
+        cat > fool.txt
+        The quick brown fox jimped over the lazy dog
+        aspell check fool.txt
+    interactive in check mode
+        incorrect spelled word highlighted
+        middle, 10 spelling suggestions numbered 0-9, followed by list of other possible actions
+        bottom, prompt ready to accept our choice
+    if we replace the incorrect word, aspell moves on to next mispelled word
+    after final replacement, aspell terminates and we can see that incorrect spellings have been corrected
+    unless told otherwise with options, --dont-backup, aspell creates a backup file containing original text by appending .bak extensino to filename
+
+Using sed to put back our mistakes:
+    sed -i 's/lazy/laxy/; s/jumped/jimped/' foo.txt
+        -i tells sed to edit file in-place, meaning instead of sending output to stdout, it will rewrite the file with changes applied
+        we can add more commands with semicolon
+
+aspell with HTML files
+    aspell check file
+        HTML tags will be interpreted as misspelled
+    aspell -H file
+        for HTML files

@@ -1,0 +1,131 @@
+sed
+    short for stream editor
+    performs text editing on a stream of text, either a set of specified files or standard input
+
+Simple example
+    echo "front" | sed 's/front/back/'
+    back
+        We produced a 1-word stream of text using echo and pipe into sed, which carries out the instruction s/front/back/ upon the text in the stream
+        It is the substitution command in vi
+
+Commands in sed begin with a single letter
+    In the example above, substitution command is represented by the letter s and followed by the search-and-replace strings, separated by slash as a delimeter
+        The choice of delimiter character is arbitrary
+        By convention, the slash character is often used, but sed accepts any character that immediately follows the command as the delimeter
+        echo "front" | sed 's_front_back_'
+            does the same as above example
+            By using underscore immediately after the command, it becomes the delimeter
+
+Most commands in sed may be preceded by an address, which specifies which line(s) of the input stream will be edited
+    If address is omited, then the editing command is carried out on every line in the input stream
+    simplest form of address is a line number
+        echo "front" | sed '1s/front/back'
+            Adding the address 1 to our command causes our substitution to be perfromed on the first line of our input stream
+            If we specify other numbers for the above example, it won't work
+    Addresses may be expressed as:
+        Address     Description
+        n           A line number where n is a positive integer
+        $           The last line
+        /regexp/    Lines matching a POSIX basic regexp
+                    regexp is delimited by slash characters, can be delimited by an alternate
+                    character by specifying the expression with \cregexpc, where c is the alternate
+                    character
+        addr1,addr2 A range of lines from addr1 to addr2, inclusive. Addresses may be any of the
+                    single address forms listed above
+        first~step  Match the line represented by the number first and then each subsequent line at
+                    step intervals
+                        Example:1~2 refers to odd numbers, 5~5 refers to multiples of 5
+        addr1,+n    Match addr1 and the following n lines
+        addr!       Match all lines except addr, which may be any of the forms listed above
+
+    Examples of addresses usage
+        sed -n '1,5p' distros.txt
+            -n to cause sed not to print every line by default
+        sed -n '/SUSE/p' distros.txt
+        sed -n '/SUSE/!p' distros.txt
+
+sed Basic Editing Commands
+    Command                 Description
+    =                       Output the current line number
+    a                       Append text after current line
+    d                       Delete current line
+    i                       Insert text in front of current line
+    p                       Print current line. By default, sed prints every line and only edits
+                            lines that match a specified address within the file. Default behaviour
+                            can be overriden with -n
+    q                       Exit sed without processing any more lines. If -n is not specified,
+                            output current line
+    Q                       Exit sed without processing any more lines
+    s/regexp/replacement    Substitute the contents of replacement wherever regexp is found
+                            regexp may include special character & which is equivalent to text
+                            matched by regexp
+                            replacement may include sequences \1 through \9, which are contents of 
+                            corresponding subexpressions in regexp
+                            after trailing slash following replacement, an optional flag may be 
+                            specified to modify the s command's behavior
+    y/set1/set2             Perform transliteration by converting characters from set1 to the 
+                            corresponding characters in set2. Unlike tr, sed requires both sets to
+                            be same length
+
+s command is most commonly used
+In distros.txt, date field is not computer-friendly(MM/DD/YYYY and YYYY-MM-DD)
+    sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3-\1-\2/$' distros.txt
+        the structure is
+            sed 's/regexp/replacement/' distros.txt
+            As the date appears at the end and is in format MM/DD/YYYY, we can use
+                [0-9]{2}/[0-9]{2}/[0-9]{4}$
+                    This matches 2 digits, a slash, 2 digits, a slash, 4 digits, and end of line
+            For replacement, we introduce a new regexp feature in BRE called back references
+            back references work like: if \n appears in replacement where n is a number[1-9], the sequence will refer to the corresponding subexpression in the regexp
+                To create subexpressions, we enclose them in parentheses:
+                ([0-9]{2})/([0-9]{2})/([0-9]{4})$
+            We have 3 subexpressions(month, day, and year) and can construct replacement as follows
+                \3-\1-\2
+            Our command looks 
+                sed -s '([0-9]{2})/([0-9]{2})/([0-9]{4})$/\3-\1-\2' distros.txt
+            We now have 2 problems:
+                extra slashes in our regexp will confuse sed
+                sed, by default accpets only bre, so several regexp characters will be taken as literals, rather than metacharacters
+            We can solve these problems using backslashes
+                sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3-\1-\2/$' distros.txt
+
+s command can be used with optional flags that may follow replacement string
+most common is g(globally to a line, not just to the first instance)
+    echo "aaaabbbbccc" | sed 's/b/B/'
+    echo "aaaabbbbccc" | sed 's/b/B/g'
+
+Constructing a sed script file
+    using sed to build a report of distros.txt
+    includes modified dates and distro names to uppercase
+
+    Writing script:
+                    distros.sed
+# sed script to produce Linux distribution report
+
+1 i\
+\
+Linux Distributions Report\
+
+s/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)$/\3-\1-\2/
+y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/
+
+    saved as distros.sed & run as
+        sed -f distros.sed distros.txt
+
+    How sed script works:
+        Line 1 is comment, beginning with #
+        Line 2 is a blank line, for readability
+            sed commands support line addresses to be acted upon(n,s~e,etc.)
+        Lines 3,4,5 and 6 contain text to be inserted at the address 1, the first line of input
+            The i command is followed by sequence of a backslash and then a carriage return to produce an escaped carriage return, or a line-continuation character
+                This sequence, which can be used in other circumstances like shell scripts, allows a carriage return to be embedded in a stream of text without signaling the interpreter(sed currently) that the end of the line has been reached
+                The i and a(append text, rather than insert) and c(replace text) allow multiple lines of text as long as each line, except the last, ends with a line-continuation character
+        Line 6 is actually the end of our inserted text and ends with a plain carriage return rather than a line-continuation character, signaling end of i command
+A line-continuation character is formed by a backslash followed immediately by a carriage return(without intermediary spaces)
+        Line 7 is the substitute command. Since it is not preceded by an address, each line from input stream is subject to its action
+        Line 8 performs transliteration, sed doesn't support character ranges or POSIX classes
+
+
+    sed -i 's/lazy/laxy/; s/jumped/jimped/' foo.txt
+        -i tells sed to edit file in-place, meaning instead of sending output to stdout, it will rewrite the file with changes applied
+        we can add more commands with semicolon

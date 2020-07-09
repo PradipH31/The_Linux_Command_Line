@@ -1,0 +1,83 @@
+Shell Scripts
+	a file containing a series of commands
+
+
+How to write a shell script
+	Write a script
+	Make the script executable
+	Put the script somewhere the shell can find
+
+	Script File Format
+		a hello world program
+________________________________________________________________________________
+#!/bin/sh
+
+# This is our first script
+
+echo 'Hello World!'
+________________________________________________________________________________
+
+		The last line is just an echo command with a string argument
+		The second line is a comment
+		Comments in shell scripts may appear at the end of lines provided they are preceded by at least 1 whitespace character
+			echo 'Hello World!' # This is a comment
+		This works on the command line as well
+		The first line of our script looks as if it should be a comment as it starts with #, but it looks too purposeful to be just that
+		
+		The #! character sequence is a special construct called a shebang, used to tell the kernel the name of the interpreter that should be used to execute the script that follows
+
+		Every shell script should include this as its first line
+		Save the script as hello_world
+
+	Executable Permissions
+		chmod 755 hello_world
+		Use 755 for scripts that everyone can execute and 700 for scripts taht only the owner can execute
+		Scripts should be readable to be executed
+
+	Script File Location
+		We can execute our script
+			./hello_world
+		If no explicit path is defined, the system searches a list of directories each time it needs to find an executable program, which are included in the PATH variable
+			echo $PATH
+		If our script was in any directories in the list, we wouldn't have to worry
+		Most Linux distributions configure the PATH variable to contain a bin directory in the user's home directory to allow users to execute their own programs
+		So, if we create the bin directory and place our script within it, it should start to work like other programs
+			mkdir bin
+			mv hello_world bin
+			hello_world
+		If the PATH variable does not contain the directory, we can add it with addition in .bashrc
+			export PATH=~/bin:"$PATH"
+		After change has been made, reread the bashrc file by sourcing it
+			. .bashrc
+		. is synonym for source command
+
+
+	Good Locations for Scripts
+		~/bin			for personal
+		/usr/local/bin	for use by everyone
+		/usr/local/sbin	for use by system administrator
+		Locally supplied software should be in /usr/local hierarchy and not in /bin or /usr/bin, as they have been specified by LFHS to contain only files supplied and maintained by Linux distributor
+		
+
+More Formatting Tricks
+	Making a script easy to read and understand for maintenance
+
+	Long Option Names
+		When writing scripts, long options can provide improved readability like
+			ls --all --directory
+			ls -ad
+	Indentation & Line Continuation
+		Spreading long commands over several lines
+			find playground \
+				\( \
+					-type f \
+					-not -perm 0600 \
+					-exec chmod 0600 '{}' ';' \
+				\) \
+				-or \
+				\( \
+					-type d \
+					-not -perm 0700 \
+					-exec chmod 0700 \{}\ ';' \
+				\)
+		Using backslash-linefeed sequences(line continuation) and indentation, logic is more clear

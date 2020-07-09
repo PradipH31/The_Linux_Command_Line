@@ -1,0 +1,166 @@
+A process often used in conjunction with compiling is called linking
+	There are many common tasks performed by programs like opening a file
+	It would be wasteful to have each program implement its own routine to open file
+	It makes sens to have a single piece of programming that knows how to open files and to allow all programs that need to share it
+	Providing support for common tasks is accomplished by libraries
+		Libraries contain multiple routines, each performing some common task that multiple programs can share
+		If we look in /lib and /usr/lib, we can see where many of them live
+	A program called linker is used to form the connections between the output of compiler and the libraries that the compiled program requires
+	The final result of this process is the executable program file, ready for use
+
+
+								Compiling a C Program
+
+We need tools like the compiler, the linker and make
+C compiler is called gcc
+Check whether GCC is installed
+	which gcc
+
+Obtaining Source code
+	We will compile a program from GNU called diction, which checks text files for writing quality and style
+
+	Following convention, we're first going to create a directory for our source code named src and then download the source code into it using ftp
+		mkdir src
+		cd src
+		ftp ftp.gnu.org
+		anonymous
+			password may not be required
+			if ls does not work, enter passive to the ftp
+		passive
+		cd gnu/diction
+		ls
+		get diction-1.11.tar.gz
+		bye
+	We can also download using https
+		wget https://ftp.gnu.org/gnu/diction/diction-1.11.tar.gz
+	
+Because we are the maintainer of this source code while we compile it, we will keep it in ~/src
+Source code installed by distro will be installed in /usr/src, while source code we maintain, intended for use by multiple users is usually in /usr/local/src
+
+Source code is usually supplied in the form of a compressed tart file
+Sometimes called a tarball, the file contains the source tree or hierarchy of directories and files that comprise the source code
+Unpacking the tar file
+	tar xzf diction-1.11.tar.gz
+
+Most linux source code follow a standard: when source code tar file is unpacked, a directory will be created that contains source tree, and will be named project-x.xx
+This scheme allows easy installation of multiple versions of the same program
+We should always examine layout of tree before unpacking it
+Some projects will deliver the files directly into current directory
+	tar tzvf tarfile | head
+
+
+Examining Source Tree
+	ls
+We see a number of files
+Most linux programs, will supply documentation files README, INSTALL, NEWS, and COPYING
+These files contain the description of the program, information on how to build and install it, and its licensing terms
+Read the README and INSTALL files before attempting to build it
+The other interesting files in this directory are the ones ending with .c and .h
+	The .c files contain the 2 C programs supplied by the package (style and diction), divided into modules
+		It is common practice for large programs to be broken into smaller, easier-to-manage pieces
+		The source code files can be examined with less
+	The .h files are known as header files
+		header files contain descriptions of the routines included in a source code file or library
+		For the compiler to connect the modules, it must receive a description of all the modules needed to complete the entire program
+Near the beginning of diction.c, we see
+	#include "getopt.h"
+		This instructs the compiler to read the file getopt.h as it reads the source code in "diction.c" to know what's in getopt.c
+		The getopt.c file supplies routines that are shared by both style and diction programs
+Before the include for getopt.h, we see other include statements
+	#include <regex.h>
+	#include <stdio.h>
+	..
+		These also refer to the header files, but they refer to the header files that live outside the current source tree
+		They are supplied by the system to support the compilation of every program
+		We can see them in /usr/include which were installed with the compiler
+
+
+
+Building the Program
+Most programs build with a simple, 2-command sequence
+	./configure
+	make
+
+configure
+	The configure program is a shell script that is supplied with the source tree
+	It analyzes the build environment
+	Most source code is designed to be portable
+		It is designed to build on more than 1 kind of Unix-like system
+	But to do that, source code may need to undergo slight adjustments during build to accomodate difference between systems
+	configure also checks to see that necessary external tools and components are installed
+
+	Running configure explicitly by prefixing with ./
+		./configure
+	configure will output a lot of messages as it tests and configures the build
+	If there are error messages, the configuration failed, and the program will not build until the errors are corrected
+
+	configure created several new files in our source directory
+	The most important one is the makefile
+	makefile
+		a configuration file that instructs the make program exactly how to build the program
+		Without it, make will refuse to run
+
+mkae
+	takes as input a makefile(normally named Makefile), which describes the relationships and dependencies among the components that comprise the finished program
+	the first part of the makefile defines variables that are substitueted in later sections of the makefil
+		For example,
+			CC=		gcc
+				This defines the C compiler to be gcc
+		Later in the makefile, we see 1 instance where it gets used
+			diction:		... $(CC)
+				A substitution is performed here, and the value $(CC) isw replaced by gcc at runtime
+
+	Most of the makefile consists of lines that define a target- in this case, the executable file diction and the files on which it is dependent
+	The remaining lines describe the commands needed to create the target from its components
+	The executable file diction(one of the end products) depends on the existence of diction.o, sentence.o, misc.o, getopt.o, and getopt1.o
+	Later, in the makefile, we see definitions of each of these as targets
+
+	We don't see any command specified for them
+	This is handled by a general target, earlier in the file, that describes the command used to compile any .c file into an .o file
+		.c.c:
+					$(CC) -c $(CPPFLAGS) $(CFLAGS) $<
+	This all seems complicated, why not simply list all the steps to compile the parts and be done with it
+		The answer will become clear in a moment
+
+	Let's run make and build our programs
+		make
+			The make program will run, using the contents of Makefile to guide its actions
+			When it finishes, we will see that all the targets are now present in our directory
+			Among the files, we see diction and style, the programs that we set out to build
+		We finished building our program
+	
+	Out of curiosity, let's run make again
+		make
+		make: Nothing to be done for 'all'
+	It only produces this strange message
+	
+	Rather than simply building everything again, make only builds what needs building
+	With all of the targets present, make determined that there was nothing to do
+	We can confirm this by deleting one of the targets and running make again
+		rm getopt.o
+		make
+	We see that make rebuilds it and relinks diction and style programs because they depend on the missing module
+	This behaviour also points out another important feature of make
+		it keeps targets up-to-date
+		make insists that targets be newer than their dependencies
+		This makes sense because a programmer will often update a bit of source code and then use make to build a new version of the finished product
+		make ensures that everything that needs building based on the updated code is built
+		If we use touch to update one of source code files, we can see this happen
+			ls -l diction getopt.c
+			touch getopt.c
+			ls -l diction getopt.c
+			make
+		After make runs, we see that it has restored the target to being newer than the dependency
+	
+	The ability of make to intelligently build only what needs building is a great benefit
+
+
+Installing the Program
+	Well-packaged source code will often include a special make target called install
+	This target will install the final product in a system directory for use
+	Usually, this directory is /usr/loca/bin, the traditional location for locally built software
+	However, this directory is not normally writable by ordinary users, so we must become superuser
+		sudo make install
+	The target install can be found in makefile
+	After installation, we can check the program 
+	which diction

@@ -1,0 +1,100 @@
+pr
+	used to adjust text to fit on a specific page size, with optional page headers and margins
+	Common pr Options
+	Option			Description
+	*first[:last]	Output a range of pages starting with first and, optionally, ending 
+					with last
+	-columns		Organize content of page into number of columns specified by columns
+	-a				By default, multicolumn output is listed vertically, -a(across) lists
+					content horizontally
+	-d				Double-space outpu
+	-D format		Format the date displayed in page headers using format
+	-f				Use form feeds rather than carriage returns to separate pages
+	-h header		In center portion of page header, use header rather than name of file
+					being processed
+	-l length		Set page length to length, default is 66(US letter at 6 lines per inch)
+	-n				Number lines
+	-o offset		Create a left margin offset charcters wide
+	-w width		Set page width to width(default is 72)
+
+	ps is often used in pipelines as a filter
+	Example:
+		ls /usr/bin | pr -3 -w 65 | head
+
+Sending a Pring Job to a Printer
+	2 methods:
+	LPD(used in Berkeley Software Distribution of Unix)
+		lpr
+			ls /usr/bin | pr -3 | lpr
+				Sends to default printer
+			ls /usr/bin | pr -3 | lpr -P printer_name
+				Send to printer_name
+		lpstat -a
+			list of printers known to system
+						Common lpr Options
+		Option		Description
+		-n number	Set number of copies to number
+		-p			Print each page with a shaded header with date, time, job name, and 
+					page number
+		-P printer	Specify the name of printer used for output
+		-r			Delete files after printing, would be useful for programs that produce
+					temporary printer-output files
+
+	SysV(from System V version of Unix)
+		lp
+						Common lp options
+		Option			Description
+		-d printer			Set destination(printer) to printer, if none is specified, default
+							printer is used
+		-n number			Set number of copies to number
+		-o landscape		Set output to landscape orientation
+		-o fitplot			Scale the file to fit the page, useful when printing images
+		-o scaling=n		Scale file to n, value of 100 fills the page
+							Values less than 100 are reduced, greater than 100 cause printing
+							across multiple pages
+		-o cpi=number		Set output characters per inch to number(default is 10)
+		-o lpi=number		Set output lines per inch to number(default is 6)
+		-o page-bottom=p	Set page margins, values are expressed in points,a unit of
+		-o page-left=p		typographic measurement
+		-o page-right=p		There are 72 points to an inch
+		-o page-top=p	
+		-P pages			Specify list of pages, may be expressed as a comma-separated
+							list and/or a range
+			
+			Usage:
+				ls /usr/bin | pr -4 -2 90 -l 88 | lp -o page-left=36 -o cpi=12 -o lpi=8
+					prints 12 CPI and 8 LPI with a left margin of 1 half inch
+	
+	a2ps
+		format conversion program, ASCII to PostScript
+		sends default output to the system's default printer rather than stdout
+		improves the appearance of output
+		Usage:
+			ls /usr/bin | pr -3 -t | a2ps -o ~/Desktop/ls.ps -L 66
+				-L to specify lines per page to match the output pagination of pr
+		The default output layout is two-up format, causing contents of 2 pages to be pritned on each sheet of pater
+		There are many options to use with this tool
+
+
+Monitoring & Controlling Print Jobs
+	CUPS supplies several command-line programs that are used to manage printer status and print queues
+	lpstat
+		used to determine the names and availability of printers on the system
+			lpstat -a
+			lpstat -s
+							Common lpstat Options
+		Option				Description
+		-a [printer]		Display state of printer queue for printer
+		-d					Display the name of the system's default printer
+		-p [printer]		Display status of specified printer
+		-r					Display the status of the print server
+		-s					Display a status summary
+		-t					Display a complete status report
+	lpq
+		view status of printer queue and print jobss
+			lpq
+	lprm/cancel
+		CUPS supplies 2 programs to terminate print jobs and remove them from print queue
+		lprm(Berkeley style)
+		cancel(System V style)
+			cancel 603

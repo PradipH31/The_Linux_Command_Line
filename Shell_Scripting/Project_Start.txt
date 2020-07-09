@@ -1,0 +1,238 @@
+First Stage:Minimal Document
+	The first stage of our program will be to output a HTML template to standard output
+
+								sys_info_page
+________________________________________________________________________________
+#!/bin/bash
+
+# Program to output a system information page
+
+echo "<html>"
+echo "	<head>"
+echo "		<title>Page Title</title>"
+echo "	</head>"
+echo "	<body>"
+echo "		Page body."
+echo "	</body>"
+echo "</html>"
+________________________________________________________________________________
+
+make it executable and attempt to run it
+running the program again and redirecting output to sys_info_page.html
+	sys_info_page > sys_info_page.html
+	firefox sys_info_page.html
+
+Making the program simpler
+________________________________________________________________________________
+#!/bin/bash
+
+# Program to output a system information page
+
+echo "<html>
+		<head>
+			<title>Page Title</title>
+		</head>
+		<body>
+			Page body.
+		</body>
+	</html>"
+________________________________________________________________________________
+	
+	A quoted string may include newlines, and can contain multiple lines of text
+	The shell will keep reading the text until it encounters the closing quotation mark
+	This behavior can be observed on the command line as well
+
+						Second Stage: Adding a Little Data
+________________________________________________________________________________
+#!/bin/bash
+
+# Program to output a system information page
+
+echo "<html>
+		<head>
+			<title>System Information Report</title>
+		</head>
+		<body>
+			<h1>System Information Report</h1>.
+		</body>
+	</html>"
+________________________________________________________________________________
+
+
+
+
+							Variables and Constants
+________________________________________________________________________________
+#!/bin/bash
+
+# Program to output a system information page
+
+title="System Information Report"
+
+echo "<html>
+		<head>
+			<title>$title</title>
+		</head>
+		<body>
+			<h1>$title</h1>.
+		</body>
+	</html>"
+________________________________________________________________________________
+
+We created a variable title and assigned it the value System Information Report
+
+How variables are created
+	by using it
+	when shell encounters a variable, it automatically creates it
+		if nothing is assigned, it becomes nothing
+	so, we must be careful about spellings
+
+Varibale names rules
+	may consist of alphanumeric characters and underscore characters
+	first character must be a letter or an underscore
+	spaces and punctuation symbols are not allowed
+
+Constants
+	The shell makes no distinction between variables and constants
+	So, a common convention is to use uppercase letters to designate constants and lowercase letters for true variables
+	Complying with this rule,
+________________________________________________________________________________
+bin/bash
+
+# Program to output a system information page
+
+TITLE="System Information Report For $HOSTNAME"
+
+echo "<html>
+		<head>
+			<title>$TITLE</title>
+		</head>
+		<body>
+			<h1>$TITLE</h1>.
+		</body>
+	</html>"
+________________________________________________________________________________
+
+We also added a environment variable HOSTNAME for the network name of the machine
+		There is a way to make constants with declare built-in command with -r(read-only)
+			declare -r TITLE="Page Title"
+
+
+Assigning Values to Variables and Constants
+	As we have seen, variables are assigned values
+		variable=value
+			where variable is the name of variable and value is a string
+		the shell does not care about data type
+				there is a way to do this
+					declare -i number=3
+	In an assignment, there must be no spaces between
+	The value can consist of anything we can expand into a string
+		a=z						Assign string z to variable a
+		b="a string"			EMbedded spaces in quotes
+		c="a string and $b"		Other expansions like variables can be expanded
+		d="$(ls -l foo.txt)"	Results of a command
+		e-$((5 * 7)				Arithmetic Expansion
+		f="\t\ta string\n"		Escape sequences like tabs and newlines
+	During expansion, variable names may be surrounded by optional braces, {}
+		useful in cases where a variable name becomes ambiguous beacuse of its surrounding context
+	Example
+		filename="myfile"
+		touch "$filename"
+		mv "$filename" "$filename1"
+			does not work as shell interprets the second argument as a variable 
+			So,
+		mv "$filename" "${filename}1"
+		By adding surrounding braces, shell does not interpret trailing 1 as vairable name
+
+
+
+We add some data to our report
+________________________________________________________________________________
+#!/bin/bash
+
+# Program to output a system information page
+
+TITLE="System Information Report For $HOSTNAME"
+CURRENT_TIME="$(date "+%x %r %Z")"
+TIMESTAMP="Generated $CURRENT_TIME, by $USER"
+
+echo "<html>
+		<head>
+			<title>$TITLE</title>
+		</head>
+		<body>
+			<h1>$TITLE</h1>.
+			<p>$TIMESTAMP</p>
+		</body>
+	</html>"
+________________________________________________________________________________
+
+
+
+
+Here Documents
+	an additional form of I/O redirection in which we embed a body of text into our script and feed it into the stdin of a command
+	Usage:
+		command << token
+		text
+		token
+			command is the command that accepts stdin
+			token is the string used to indicate end of embedded text
+Modifying script to use here document
+________________________________________________________________________________
+#!/bin/bash
+
+# Program to output a system information page
+
+TITLE="System Information Report For $HOSTNAME"
+CURRENT_TIME="$(date "+%x %r %Z")"
+TIMESTAMP="Generated $CURRENT_TIME, by $USER"
+
+cat << _EOF_
+<html>
+	<head>
+		<title>$TITLE</title>
+	</head>
+	<body>
+		<h1>$TITLE</h1>
+		<p>$TIMESTAMP</p>
+	</body>
+</html>
+_EOF_
+________________________________________________________________________________
+
+	Our script now uses cat and a here document
+	The string _EOF_ (end of fiel, common convention) was selected as the token and marks end of embedded text
+		token must appear alone without trailing spaces
+	
+	Advantage of using here document
+		similar to echo, except does not treat quotes as special characters
+		Example
+			foo="some text"
+			cat << _EOF_
+			$foo "$foo" '$foo' \$foo
+			_EOF_
+			some text "some text" 'some text' $foo
+	the shell treats quotes as ordinary characters
+	can be used with any command that accepts stdin
+
+Using here document to retrieve a file from FTP
+________________________________________________________________________________
+#!/bin/bash
+
+# Script to retrieve a file via FTP
+
+FPT_SERVER=ftp.nl.debian.org FTP_PATH=/debian/dists/stretch/main/installer-amd64/current/images/cdrom REMOTE_FILE=debian-cd_info.tar.gz
+
+ftp -b << _EOF_
+open $FTP_SERVER
+user anonymous me@linuxbox
+cd $FTP_PATH
+hash
+get $REMOTE_FILE
+bye
+_EOF_
+ls -l "$REMOTE_FILE"
+________________________________________________________________________________
+
+	If we change redirection operator from << to <<-, the shell will ignore leading tab characters (not spaces) in the her document, allowing here document to be intented

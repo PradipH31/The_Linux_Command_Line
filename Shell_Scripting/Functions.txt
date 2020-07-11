@@ -1,0 +1,111 @@
+top-down design
+	process of identifying top-level steps and developing increasingly detailed views of those steps
+
+Shell Functions
+	mini-scripts that are located inside other scripts and can act as autonomous programs
+
+	We will add some tasks
+	System uptime and load
+	Disk space
+	Home space
+
+	If we had a command for each of these task, we could add them as:
+		$(report_uptime)
+		$(report_disk_space)
+		$(report_home_space_
+	We could create these additional commands in 2 ways:
+		write scripts and place in PATH directories
+		embed scripts as shell functions
+
+	Shell functions have 2 syntax
+	Formal:
+		function name {
+			commands
+			return
+		}
+	Simpler & generally used:
+		name() {
+			commands
+			return
+		}
+
+	Usage of shell functions
+		function step2 {
+			echo "Step 2"
+			return
+		}
+		step2
+	
+	For function calls to be recognized as shell functions, not as external programs, shell function definitions must appear in the script before they are called
+	A function must contain at least 1 command
+	The return command(which is optional) satisfies this requirement
+
+
+Local Variables
+	All variables so far have been gloabl variables, which maintain existence throughout the program
+	Local variables are desirable inside shell functions
+	accessible only within the shell function in which they are defined and cease to exist once the shell function terminates
+	Usage:
+		foo=0 # global variable foo
+		func_1() {
+			local foo #local variable for func_1
+			foo=1
+		}
+
+
+Keep Scripts Running
+	Keeping program in a runnable state, we can detect errors early in development
+	By adding empty functions, called stubs, we can verify the logical flow of our program at an early stage
+	In a stub, we should include something to provide feedback to the programmer
+
+
+									Functions in sys_info
+#!/bin/bash
+
+# Program to output a system information page
+
+TITLE="System Information Report For $HOSTNAME"
+CURRENT_TIME="$(date "+%x %r %Z")"
+TIMESTAMP="Generated $CURRENT_TIME, by $USER"
+
+report_uptime() {
+		cat <<- _EOF_
+				<h2>System Uptime</h2>
+				<pre>$(uptime)</pre>
+				_EOF_
+		return
+}
+
+report_disk_space() {
+		cat <<- _EOF_
+				<h2>Disk Space Utilizatoin</h2>
+				<pre>$(df -h)</pre>
+				_EOF_
+		return
+}
+
+report_home_space() {
+		cat <<- _EOF_
+				<h2>Home Space Utilization</h2>
+				<pre>$(du -sh /home/*)</pre>
+				_EOF_
+		return
+}
+
+cat << _EOF_
+<html>
+	<head>
+		<title>$TITLE</title>
+	</head>
+	<body>
+		<h1>$TITLE</h1>
+		<p>$TIMESTAMP</p>
+	</body>
+</html>
+_EOF_
+
+
+We use du -sh, which will not work on some systems as they have home directories unreadable by the world
+A better solution will be to adjust behavior according to privileges of the user
+
+We can add shell functions to our .bashrc

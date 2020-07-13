@@ -235,4 +235,4 @@ _EOF_
 ls -l "$REMOTE_FILE"
 ________________________________________________________________________________
 
-	If we change redirection operator from << to <<-, the shell will ignore leading tab characters (not spaces) in the her document, allowing here document to be intented
+	If we change redirection operator from << to <<-, the shell will ignore leading tab characters (not spaces) in the here document, allowing here document to be indented

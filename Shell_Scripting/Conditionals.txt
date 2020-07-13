@@ -1,0 +1,324 @@
+if Statements
+	if [ "$x" -eq 5 ]; then
+		echo "x equals 5."
+	else
+		echo "x does not equal 5."
+fi
+
+Entering directly at the command line
+	x=5
+	if [ "$x" -eq 5 ]; then echo "equals 5"; else echo "does not equal 5"; fi
+
+Syntax of if statement
+	if commands; then
+		commands
+	[elif commands; then
+		commands...]
+	[else
+		commands]
+	fi
+
+
+Exit Status
+	Commands(including scripts & functions) issue an exit status when they terminate
+	Exit status is in the range 0-255 and indicates success or failure of the command
+	By convention, 0 indicates success & any other value indicates failure 
+	The shell provides a parameter to examine the exit status
+		ls -d /usr/bin
+		echo $?
+		ls -d /bin/usr
+		echo $?
+	The shell provides 2 simple builtin commands that terminate with either 0 or 1 exit status
+	The true command always executes successfully, and the false command always executes unsuccessfully
+	We can use these commands to see how the if statement works
+	What if really does is evaluate success or failure of commands
+		if true; then echo "It's true."; fi
+		if false; then echo "It's true."; fi
+	If a list of command follows if, the last command in the list is evaluated
+		if false; true; then echo "It's true."; fi
+
+
+Using TEST
+	the command used most frequently used with if is test
+		test performs a variety of checks and comparisons
+		It has 2 equivalent forms
+			first one
+				test expression
+			popular one
+				[ expression]
+		where expression is an expression that is evaluated as either true or false
+	returns exit status 0 when expression is true & 1 when false
+both test & [ are commands
+	In bash, they are builtins and also exist as programs in /usr/bin
+	The expression is just their arguments and with the [ requiring ] be final argument
+	
+	test & [ support a wide range of useful expressions & tests
+File Expressions
+	Expression			Is true if
+	file1 -ef file 2	file1 and file2 have the same inode numbers(refer same file by 
+						hard links)
+	file1 -nt file2		file1 is newer than file2
+	file1 -ot file2		file1 is older than file2
+	-b file				file exists and is a block-special (device) file
+	-c file				file exists and is a character-special (device) file
+	-d file				file exists and is a directory
+	-e file				file exists
+	-f file				file exists and is a regular file
+	-g file				file exists and is set-group-ID
+	-G flie				file exists and is owned by effective group ID
+	-k file				file exists and has its "sticky bit" set
+	-L file				file exists and is a symbolic link
+	-O file				file exists and is owned by effective user ID
+	-p file				file exists and is a named pipe
+	-r file				file exists and is readable (has readable permission for the 
+						effective user)
+	-s file				file exists and has a length greater than 0
+	-S file				file exists and is a network socket
+	-t fd				fd is a file descriptor directed to/from terminal
+						used to determine whether stdin/out/err is being redirected
+	-u file				file exists and is setuid
+	-w file				file exists and is writable 
+	-x file				file exists and is executable
+
+
+Usage:
+	FILE=~/.bashrc
+		if [ -e "$FILE" ]; then
+			echo "$FILE exists"
+		else
+			echo "$FILE does not exist"
+			exit 1
+		fi
+		exit
+
+	There are 2 interesting things to note
+		First, $FILE is quoted within the expressions
+			This is not required to syntactically complete the expression; it is a defense against paramter being empty or containing only whitespace
+			If paramter expansion of $FILE results in empty value, it would cause an error(operators would be interpreted as non-null strings rather than operators)
+			Using quotes around the parameter ensures that operator is always followed by a string, even if the string is empty
+		Second, the presence of exit command near the end of script
+			exit accepts a single, optional argument, which becomes the script's exit status
+			Using exit in this way allows the script to indicate failure if $FILE expands to the name of a nonexistent file
+			The exit appearing on the last line is there as a formality
+			When a script "runs off the end" (reaches end of flie), it terminates with an exit status of the last command executed
+
+	Shell functions(not scripts) can return an exit status by including an integer argument to the return command
+	Example:
+		test_file() {
+			FILE=~/.bashrc
+			if [ -e "$FILE" ]; then
+				echo "File exists"
+			else
+				echo "$FILE does not exist"
+				return 1"
+			fi
+		}
+	
+	test string expressions
+	Expression				Is true if
+	string					string is not null
+	-n string				length of string is greater than 0
+	-z string				length of string is 0
+	string1 = string2		string1 and string2 are equal, = or == may be used
+	string1 == string2		use of == is prefered, but is not POSIX compliant
+	string1 != string2		string1 and string2 are not equal
+	string1 > string2		string1 sorts after string2
+	string1 < string2		string1 sorts before string2
+
+	< and > must be escaped, else will be interpreted as redirection operations
+	sorting uses the collation order of the current locale
+Usage:
+	ANSWER=maybe
+	if [ -z "$ANSWER" ]; then
+		echo "There is no answer" >&2
+		exit 1
+	fi
+
+	if [ "$ANSWER" = "yes" ]; then
+		echo "something"
+	fi
+		In this script, we evaluate ANSWER
+		If ANSWER is empty, we terminate script & set exit status to 1
+		The redirection redirects error message "There is no answer" to stderr, which is the right thing to do
+			else, it would send the intended error message to stdout
+
+Integer Expressions
+	test Integer Expressions
+	Expression					Is true if:
+	integer1 -eq integer2		integer1 is equal to integer2
+	integer1 -ne integer2		integer1 is not equal to integer2
+	integer1 -le integer2		integer1 is less than or equal to integer2
+	integer1 -lt integer2		integer1 is less than integer2
+	integer1 -ge integer2		integer1 is greater than or equal to integer2
+	integer1 -gt integer2		integer1 is greater than integer2
+
+Usage:
+	INT=-5
+	if [ -z "$INT" ]; then
+		echo "INT is empty" >&2
+		exit 1
+	fi
+	if [ "$INT" -eq 0 ]; then
+		echo "INT is 0"
+	else
+		if [ $((INT % 2)) -eq 0 ]; then
+			echo "INT is even"
+		else
+			echo "INT is odd"
+		fi
+	fi
+
+
+					Modern Version of test
+[[ expression ]]
+	where, like test, expression is an expression that evaluates either true or false
+	is similar to test but adds an important new string expression
+		string1 =~ regex
+			returns true if string1 is matched by the ERE regex
+	In our above example, the script would fail if the constant INT contained anything except an integer
+	Using [[ ]] with the =~ string expression operator, we could improve the script this way
+
+INT=-5
+if [[ "$INT" =~ ^-?[0-9]+$ ]]; then
+	if [ "$INT" -eq 0 ]; then
+		echo "INT is zero"
+	fi
+else
+	echo "INT is not an integer" >&2
+	exit 1
+fi
+
+	By applying regexp, we are able to limit the value of INT to only strings that begin with an optional minus sign, followed by 1 or more numbers
+	It also eliminates the possibility of empty values
+
+	Another added feature of [[ ]] is that the operator == supports pattern matching like pathname expansion
+	Example
+		FILE=foo.bar
+		if [[ $FILE == foo.* ]]; then
+			echo "FILE matches pattern 'foo.*'"
+		fi
+
+
+(( )) - Designed for Integers
+	used to perform arithmetic truth tests
+	arithmetic truth test results in true if the result of the arithmetic evaluation is non-zero
+	Example
+		if ((1)); then echo "It is true."; fi
+		if ((0)); then echo "It is true."; fi
+	Using (( )), we can simplify the above script
+
+INT=-5
+if [[ "$INT" =~^-?[0-9]+$ ]]; then
+	if ((INT == 0)); then
+		echo "INT is zero."
+	else
+		if ((INT < 0)); then
+			echo "INT is negative"
+		else
+			echo "INT is positive"
+		fi
+		if (( ((INT % 2)) == 0)); then
+			echo "INT is even"
+		else
+			echo "INT is odd"
+		fi
+	fi
+else
+	echo "INT is not an integer" >&2
+	exit 1
+fi
+
+	== is used for test of equivalence
+	(( )) is part of the shell syntax rather than an ordinary command and it deals only with integers, so it can recognize variables by name and does not require expansion to be performed
+
+
+
+Combining Expressions
+	using logical operators
+	3 logical operators for test and [[ ]]: AND, OR and NOT
+	Logical Operators
+	Operation	test	[[ ]] and (( ))
+	AND			-a		&&
+	OR			-o		||
+	NOT			!		!
+
+	Example
+		MIN_VAL=1
+		MAX_VAL=100
+		
+		INT=50
+
+		if [[ "$INT" =~ ^-?[0-9]+$ ]]; then
+			if [[ "$INT" -ge "$MIN_VAL" && "$INT" -le "$MAX_VAL" ]]; then
+				echo "$INT is within $MIN_VAL to $MAX_VAL."
+			else
+				echo "$INT is out of range"
+			fi
+		else
+			echo "INT is not an integer" >&2
+			exit 1
+		fi
+
+		# Usage of !
+		if [[ "$INT" =~ ^-?[0-9]+$ ]]; then
+			if [[ ! ("$INT" -ge "$MIN_VAL" && "$INT" -le "$MAX_VAL") ]]; then
+				echo "$INT is outside $MIN_VAL to $MAX_VAL."
+			else
+				echo "$INT is in range"
+			fi
+		else
+			echo "INT is not an integer" >&2
+			exit 1
+		fi
+
+	We include parentheses around expression for grouping without which negation would apply only to first expression and not the combination
+
+
+	Using test with logical operators
+		if [ ! \( "$INT" -ge "$MIN_VAL" -a "$INT" -le "$MAX_VAL" \) ]; then
+			echo "$INT is outsied $MIN_VAL to $MAX_VAL"
+		else
+			echo "$INT is in range"
+		fi
+	shell treats all expressions of test as arguemnts, so they must be escaped
+
+
+[[ ]] is prefered for modern scripts
+test is prefered for portability as it is POSIX compliant
+
+
+
+Control Operators
+	bash provides 2 control operators for branching
+	&&(AND) and ||(OR) work like logical operators in [[ ]] compound command
+	Syntax:
+		command1 && command2
+		command1 || command2
+	With &&, command1 is executed and command 2 is executed, only if, command1 is successful
+	With ||, command1 is executed and command2 is executed only if, command1 is unsuccessfui
+
+	We can do something like:
+		mkdir temp && cd temp
+		[[ -d temp ]] || mkdir temp
+	In scripts, we can do:
+		[[ -d temp ]] || exit 1
+			If temp doesn't exist, exit with code 1
+
+
+Changes to sysinfo
+	Detecting whether user has permission to read all home directories
+
+report_home_space() {
+		if [[ "$(id -u)" -eq 0 ]]; then
+			cat <<- _EOF_
+					<h2>Home Space Utilization</h2>
+					<pre>$(du -sh /home/*)</pre>
+					_EOF_
+		else
+			cat <<- _EOF_
+					<h2>Home Space Utilization</h2>
+					<pre>$(du -sh $HOME)</pre>
+					_EOF_
+		fi
+		return
+}

@@ -1,0 +1,133 @@
+while
+________________________________________________________________________________
+#!/bin/bash
+
+count=1
+
+while [[ "$count" -le 5 ]]; do
+	echo "count"
+	count=$((count + 1))
+done
+echo "Finished."
+________________________________________________________________________________
+
+	The syntax is
+		while commands; do commands; done
+
+	while evaluates exit status of a list of commands
+	As long as exit status is 0. it performs commands inside the loop
+________________________________________________________________________________
+#!/bin/bash
+clear
+
+DELAY=3
+
+while [[ "$REPLY" != 0 ]]; do
+	clear
+	cat << _EOF_
+		Please Select:
+
+		1. Display System Information
+		2. Display Disk Space
+		0. Quit
+	_EOF_
+	read -p "Enter selection [0-3] > "
+
+	if [[ "$REPLY" =~ ^[0-2]$ ]]; then
+		if [[ "$REPLY" == 1 ]]; then
+			echo "Hostname: $HOSTNAME"
+			uptime
+			sleep "$DELAY"
+		fi
+		if [[ "$REPLY" == 2 ]]; then
+			df -h
+			sleep "$DELAY"
+		fi
+	else
+		echo "Invalid entry" >&2
+			sleep "$DELAY"
+	fi
+done
+echo "Program terminated."
+________________________________________________________________________________
+
+Breaking out of loop
+	break
+		terminate a loop and continue with the next statement
+	continue
+		skip remainder of loop and resume with next iteration of loop
+________________________________________________________________________________
+#!/bin/bash
+clear
+
+DELAY=3
+
+while true; do
+	clear
+	cat << _EOF_
+		Please Select:
+
+		1. Display System Information
+		2. Display Disk Space
+		0. Quit
+	_EOF_
+	read -p "Enter selection [0-3] > "
+
+	if [[ "$REPLY" =~ ^[0-2]$ ]]; then
+		if [[ "$REPLY" == 1 ]]; then
+			echo "Hostname: $HOSTNAME"
+			uptime
+			sleep "$DELAY"
+			continue
+		fi
+		if [[ "$REPLY" == 2 ]]; then
+			df -h
+			sleep "$DELAY"
+			continue
+		fi
+		if [[ "$REPLY" == 0 ]]; then
+			break
+		fi
+	else
+		echo "Invalid entry" >&2
+			sleep "$DELAY"
+	fi
+done
+echo "Program terminated."
+________________________________________________________________________________
+
+
+until
+	like while, continues until it receives a 0 exit status
+________________________________________________________________________________
+#!/bin/bash	
+
+count=1
+
+until [[ "$count" -gt 5 ]]; do
+	echo "$count"
+	count=$((count + 1))
+done
+echo "Finished"
+________________________________________________________________________________
+
+
+
+
+Reading Files with Loops
+________________________________________________________________________________
+#!/bin/bash	
+
+while read distro version release; do
+	printf "Distro: %s\tVersion: %s\tReleased: %s\n" \
+		   "$distro" \
+		   "$version" \
+		   "$release" \
+done < distros.txt
+________________________________________________________________________________
+
+To redirect a file to loop, we place redirection operator after done
+We will use read to input fields from redirected file
+
+It is possible to pipe stdin to loop
+	sort -k ... distros.txt | while read

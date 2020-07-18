@@ -1,0 +1,173 @@
+read
+	used to read a single line of stdin
+	can be used to read keyboard input, or, when redirection is employed, a line of data from a file
+	Syntax
+		read [-options] [variable..]
+			variable is the name of 1 or more variables used to hold input value
+			if no variable is supplied, shell variable REPLY contains line of data
+	Usage:
+		echo -n "Please enter an integer -> "
+		read int
+	We use echo with -n (suppress trailing newline on output) to display a prompt
+	Assigning multiple variables
+		echo -n "Enter 1 or more values > |
+		read var1 var2 var3 var4 var5
+	if read receives fewer than expected number, extra variables become empty
+	if read receives excessive inputs, final variable will contain all extra input
+	No variable
+		echo -n "Enter 1 or more values > |
+		read
+		echo "$REPLY"
+	read Options
+	Option				Description
+	-a array			Assign input to array, starting with index 0
+	-d delimeter		first character in the string delimiter indicates end of input
+						rather than a newline character
+	-e					use readline to handle input, permits input editing in same manner
+						as command line
+	-i string			Use string as default reply if user simply presses ENTER, requires
+						-e
+	-n num				Read num characters of input, rather than entire line
+	-p prompt			Dislplay prompt for input using string prompt
+	-r					Raw mode, doesn't interpret backslash characters as escapes
+	-s					Silent mode, doesn't echo characters to display as they are typed
+						useful when inputting passwords
+	-t seconds			timeout, terminate input after seconds, returns a non-zero exit 
+						status if an input times out
+	-u fd				use input from fd, rather than stdin
+
+	We can use -p to create prompts
+		read -p "Enter 1 or more values > "
+		echo "REPLY = $REPLY"
+	-t and -s to read secret input and time out
+		if read -t 10 -sp "Enter secret passphrase > " secret_pass; then
+			echo "\nSecret passphrase = '$secret_pass'"
+		else
+			echo -e "\nInput timed out" >&2
+			exit 1
+		fi
+	-e and -i to supply user with a default response
+		read -e -p "What is your name? " -i $USER
+		echo "You answered: '$REPLY'"
+
+IFS
+	shell performs word-splitting on input provided to read
+	this means multiple words separated by one or more spaces become separate items on input line and are assigned to separate variables by read
+	this behavior is configured by a shell variable named IFS(Internal Field Separator), which contains a space, a tab, and a newline character
+	IFS can be adjusted to control field separator like when in /etc/passwd
+
+	Reading contents of /etc/passwd by changing value of IFS to :
+________________________________________________________________________________
+#!/bin/bash
+FILE=/etc/passwd
+
+read -p "Enter a username > " user_name
+
+file_info="$(grep "^$user_name:" $FILE)"
+
+if [ -n "$file_info" ]; then
+	IFS=":" read user pw uid gid name home shell <<< "$file_info"
+	echo "User =		'$user'"
+	echo "UID =			'$uid'"
+	echo "GID =			'$gid'"
+	echo "Full Name = 	'$name'"
+	echo "Home Dir. = 	'$home'"
+	echo "Shell = 		'$shell'"
+else
+	echo "No such user '$user_name'" >&2
+	exit 1
+fi
+________________________________________________________________________________
+
+	The script contains 2 interesting lines
+		file_info="$(grep "^$user_name:" $FILE)"
+			regexp assures that the username will match only a single line
+		IFS=":" read user pw uid gid name home shell <<< "$file_info"
+			this line consists 3 parts: a variable assignment, a read command with, and a strange new redirection operator
+				The shell allows 1 or more variable assignments to take place immediately before a command
+				Such assignment alters the environment for the command that follows
+				The assignment is temporary, only for the duration of the command
+				We could have coded it this way:
+		OLD_IFS="$IFS"
+		IFS=":" 
+		read user pw uid gid name home shell <<< "$file_info"
+		IFS="$OLD_IFS"
+				Doing it in the method above is more concise
+			<<< indicates a here string
+				here string is similar to here document, shorter and consisting of a single string
+	
+	The reason for <<< is that read cannot be fed input from pipe
+
+
+
+
+Program to validate various kinds of input
+________________________________________________________________________________
+invalid_input () {
+	echo "Invalid input '$REPLY'" >&2
+	exit 1
+}
+
+read -p "Enter a single item > "
+
+# input is empty (invalid)
+[[ -z "$REPLY" ]] && invalid_input
+
+# input is multiple items(invalid)
+(( "$(echo "$REPLY" | wc -w)" > 1 )) && invlaid_input
+
+# is input a valid filename?
+if [[ "$REPLY" =~ ^[-[:alnum:]\._]+$ ]]; then
+	echo "'$REPLY' is a valid filename."
+	if [[ -e "$REPLY" ]]; then
+		echo "And file '$REPLY' exists."
+	else
+		echo "However, file '$REPLY; does not exist."
+	fi
+
+	# is input a floating point number?
+	if [[ "$REPLY" =~ ^-?[[:digit:]]*\.[[:digit:]]+$ ]]; then
+		echo "'$REPLY' is a floating point number."
+	else
+		echo "'$REPLY' is not a floating point number."
+	fi
+else
+	echo "The string '$REPLY' is not a valid filename."
+fi
+________________________________________________________________________________
+
+
+Menus
+________________________________________________________________________________
+#!/bin/bash
+clear
+
+echo "
+Please Select:
+
+1. Display System Information
+2. Display Disk Space
+0. Quit
+"
+
+read -p "Enter selection [0-3] > "
+
+if [[ "$REPLY" =~ ^[0-2]$ ]]; then
+	if [[ "$REPLY" == 0 ]]; then
+		echo "Program terminated"
+		exit
+	fi
+	if [[ "$REPLY" == 1 ]]; then
+		echo "Hostname: $HOSTNAME"
+		uptime
+		exit
+	fi
+	if [[ "$REPLY" == 2 ]]; then
+		df -h
+		exit
+	fi
+else
+	echo "Invalid entry" >&2
+	exit 1
+fi
+________________________________________________________________________________

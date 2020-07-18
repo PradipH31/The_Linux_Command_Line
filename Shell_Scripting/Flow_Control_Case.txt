@@ -1,0 +1,45 @@
+case
+	syntax
+		case word in
+			[pattern [| pattern]...) commands ;;]...
+		esac
+________________________________________________________________________________
+#!/bin/bash
+clear
+
+DELAY=3
+
+clear 
+echo "
+Please Select:
+
+1. Display System Information
+2. Display Disk Space
+0. Quit
+"
+
+read -p "Enter selection [0-3] > "
+
+case "$REPLY" in
+	0)	echo "Program terminated."
+		exit
+		;;
+	1)	echo "Hostname: $HOSTNAME"
+		uptime
+		;;
+	2)	df -h
+		;;
+	*)	echo "Invalid entry" >&2
+		exit 1
+		;;
+esac
+
+
+Patterns
+	same as pathname expansion
+	Pattern			Description
+	a)				Matches if word equals a
+	[[:alpha:]])	Matches if word is a single alphabetic character
+	???)			Matches if word is exactly 3 characters
+	*.txt)			Matches if word ends with .txt
+	*)				Mathes any value of word

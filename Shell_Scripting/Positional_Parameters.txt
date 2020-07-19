@@ -1,0 +1,242 @@
+Accessing the Command Line
+	shell provides a set of variables that contain the individual words on the command line, named 0 through 9
+________________________________________________________________________________
+#!/bin/bash
+
+echo "
+\$0 = $0
+\$1 = $1
+\$2 = $2
+\$3 = $3
+\$4 = $4
+\$5 = $5
+\$6 = $6
+\$7 = $7
+\$8 = $8
+\$9 = $9
+________________________________________________________________________________
+
+When executed with no command-line arguments,
+	$0 = /home/me/bin/posit-param
+	$1 = 
+	$2 = 
+
+Even when no arguments are provided, $0 will always contain the first item appearing on the command line, the pathname of the program being executed
+When arguments are provided, they are in variables from $1...
+
+		Accessing more than 9 parameters using parameter expansion
+		${10}, ${55}, etc
+
+
+Determining the Number of Arguments
+	shell provides a variable $# that contains number of arguments on the command line
+________________________________________________________________________________
+#!/bin/bash
+
+echo "Number of arguments: $#"
+________________________________________________________________________________
+
+
+shift--Getting Access to Many Arguments
+	say we give the above program 82 arguments
+	shift causes all parameters to move down 1 each time it is executed
+	using shift, it is possible to get by with only 1 parameter excluding $0
+________________________________________________________________________________
+#!/bin/bash
+
+count=1
+
+while [[ $# -gt 0 ]]; do
+	echo "Argument $count = $1"
+	count=$((count + 1))
+	shift
+done
+________________________________________________________________________________
+
+	posit-param2 a b c d
+	Argument 1 = a
+	Argument 2 = b
+	Argument 3 = c
+	Argument 4 = d
+
+Simple Application
+________________________________________________________________________________
+#!/bin/bash
+
+PROGNAME="$(basename "$0")"
+
+if [[ -e "$1" ]]; then
+	echo -e "\nFile Type:"
+	file "$1"
+	echo -e "\nFile Status:"
+	stat "$1"
+else
+	echo "$PROGNAME: usage: $PROGNAME file" >&2
+	exit 1
+fi
+________________________________________________________________________________
+
+	the PROGNAME variable is given value of basename "$0"
+	basename removes leading portion of a pathname, leaving only basename of a file
+
+Positional Parameters with Shell Functions
+________________________________________________________________________________
+file_info() {
+
+	if [[ -e "$1" ]]; then
+		echo -e "\nFile Type:"
+		file "$1"
+		echo -e "\nFile Status:"
+		stat "$1"
+	else
+		echo "$FUNCNAME: usage: $FUNCNAME file" >&2
+		return 1
+	fi
+}
+________________________________________________________________________________
+
+FUNCNAME keeps track of currently executed shell function
+$0 always contains the full path of name of program
+
+
+
+Handling Positional Parameters en Masse
+	shell provides 2 special parameters
+	$*
+		expands into the list of positional parameters, starting with 1
+		When surrounded by double quotes, expands into a double-quoted string containing all 
+		positional parameters, each separated by first character of IFS(by default a space 
+		character)
+	$@
+		expands into list of positional parameters, starting with 1
+		When surrounded by double quotes, expands each positional parameter into a separate word
+		as if it was surrounded by double quotes
+
+Usage example:
+________________________________________________________________________________
+#!/bin/bash
+
+print_params () {
+	echo "\$1 = $1"
+	echo "\$2 = $2"
+	echo "\$3 = $3"
+	echo "\$4 = $4"
+}
+
+pass_params () {
+	echo -e "\n" '$* :';	print_params $*
+	echo -e "\n" '"$*" :';	print_params "$*"
+	echo -e "\n" '$@ :';	print_params $@
+	echo -e "\n" '"$*" :';	print_params "$@"
+}
+
+pass_params "word" "words with spaces"
+________________________________________________________________________________
+
+With our arguments, both $* and $@ produce a 4-word result
+"$*" produces a 1-word result
+	"word words with spaces"
+"$@" produces a 2-word result
+	"word" "words with spaces"
+
+"$@" is the most useful for most situations
+
+
+
+Resuming work on sys_info_page
+	Adding options for output file, interactive mode and help
+________________________________________________________________________________
+usage() {
+	echo "$PROGNAME: usage: $PROGNAME [-f file | -i]"
+	return
+}
+
+# process command line options
+
+interactive=
+filename=
+
+while [[ -n "$1" ]]; do
+	case "$1" in
+		-f | --file)		shift
+							filename="$1"
+							;;
+		-i | --interactive)	interactive=1
+							;;
+		-h | --help)		usage
+							exit
+							;;
+		*)					usage >&2
+							exit 1
+							;;
+	esac
+	shift
+done
+________________________________________________________________________________
+	
+		We created a usage function
+		The loop continues until $1 becomes empty
+			At the end, we shift to ensure that the loop will eventually terminate
+________________________________________________________________________________
+#interactive
+
+if [[ -n "interactive" ]]; then
+	while true; do
+		read -p "Enter name of output file: " filename
+		if [[ -e "$filename" ]]; then
+			read -p "'$filename' exists. Overwrite? [y/n/q] > "
+			case "$REPLY" in
+				Y|y)	break
+						;;
+				Q|q)	echo "Program terminated."
+						exit
+						;;
+				*)		continue
+						;;
+			esac
+		elif [[ -z "$filename" ]]; then
+			continue
+		else
+			break
+		fi
+	done
+fi
+________________________________________________________________________________
+
+To implement output filename feature, we must first convert existing page-writing code into a shell function
+
+________________________________________________________________________________
+write_html_page() {
+	cat <<- _EOF_
+	<html>
+		<head>
+			<title>$TITLE</title>
+		</head>
+		<body>
+			<h1>$TITLE</h1>
+			<p>$TIMESTAMP</p>
+			$(report_uptime)
+			$(report_disk_space)
+			$(report_home_space)
+		</body>
+	</html>
+	_EOF_
+	return
+}
+
+# output html page
+
+if [[ -n "$filename" ]]; then
+	if touch "$filename": && [[ -f "$filename" ]]; then
+		write_html_page > "$filename"
+	else
+		echo "$PROGNAME: Cannot write file '$filename'" >&2
+		exit 1
+	fi
+else
+	write_html_page
+fi
+________________________________________________________________________________
+
+	We test for existence of a filename, if found, it is tested for writable with a touch and a regular file test
+	the output is either directed to stdout or to specified file
